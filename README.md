@@ -12,7 +12,8 @@ Other things to include:
 
 **Screenshot**: 
 
-Pending
+<img width="100" alt="Screenshot 2024-01-05 at 23 31 22" src="https://github.com/anthonycmain/kodakam/assets/950131/8782fe26-b850-497f-9b9c-586459e86c97">
+
 
 
 ## Dependencies
