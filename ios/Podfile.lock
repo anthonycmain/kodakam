@@ -14,6 +14,8 @@ PODS:
     - ExpoModulesCore
   - ExpoKeepAwake (12.8.0):
     - ExpoModulesCore
+  - ExpoLocalization (14.5.0):
+    - ExpoModulesCore
   - ExpoModulesCore (1.11.4):
     - glog
     - RCT-Folly (= 2022.05.16.00)
@@ -1107,6 +1109,7 @@ DEPENDENCIES:
   - ExpoFileSystem (from `../node_modules/expo-file-system/ios`)
   - ExpoHead (from `../node_modules/expo-router/ios`)
   - ExpoKeepAwake (from `../node_modules/expo-keep-awake/ios`)
+  - ExpoLocalization (from `../node_modules/expo-localization/ios`)
   - ExpoModulesCore (from `../node_modules/expo-modules-core`)
   - ExpoSystemUI (from `../node_modules/expo-system-ui/ios`)
   - ExpoWebBrowser (from `../node_modules/expo-web-browser/ios`)
@@ -1189,6 +1192,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-router/ios"
   ExpoKeepAwake:
     :path: "../node_modules/expo-keep-awake/ios"
+  ExpoLocalization:
+    :path: "../node_modules/expo-localization/ios"
   ExpoModulesCore:
     :path: "../node_modules/expo-modules-core"
   ExpoSystemUI:
@@ -1309,6 +1314,7 @@ SPEC CHECKSUMS:
   ExpoFileSystem: fb4c94cc5ec5c50cb2663d2f6d503a1960b95a1d
   ExpoHead: 563d40dcf49c38bb8d98ccc041e89ea9054112fd
   ExpoKeepAwake: ed71bfe0e6ecd38e337586ba6e1ba27a56eb373b
+  ExpoLocalization: 2d5f47577d67ce991ebdd951edf14fe1db85fa06
   ExpoModulesCore: 01c0abfa6cd9c41c4bd76d8a1a079e6b591db10f
   ExpoSystemUI: 2fbbcc07e4ed87eb02b83fafce045ff5ca2cd931
   ExpoWebBrowser: 3b3cde8aa02b08dded6f436e5851e94fec6525c5

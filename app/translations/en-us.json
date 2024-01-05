@@ -1,0 +1,51 @@
+{
+    "translation": {
+      "common": { "phone": "What's your phone number?" },
+      "camera": {
+        "title": "Camera"
+      },
+      "params": {
+        "title": "Camera",
+        "aqi": "Aqi Option",
+        "agc_lvl": "Tuning Level",
+        "advise_homemode": "Home Mode",
+        "bat": "Battery Cherish",
+        "bat1": "Battery 1",
+        "bat2": "Battery 2",
+        "brate": "Bitrate",
+        "callwait": "Call Wait",
+        "charge": "Charge Status",
+        "charge_dur": "Charge Status Change",
+        "filter_next_clean": "Clean Option",
+        "flicker": "Flicker",
+        "flipup": "Flipup",
+        "frate": "Frame Rate",
+        "get_caminfo;": "Cmd",
+        "gop": "Gop",
+        "hd": "Humidity Option",
+        "hum_float": "Humidity",
+        "ir": "Night Vision Option",
+        "isp_idx": "Picture Mode",
+        "lulla": "Lullaby Option",
+        "md": "Motion Option",
+        "mvol": "Mic Vol",
+        "res": "Resolution",
+        "rp_conn": "Repeater Conn",
+        "sd": "Sound Option",
+        "sdatrm": "Auto Remove Option",
+        "sdcap": "Sdcard Total Option",
+        "sdfree": "Sdcard Free Option",
+        "sdnoclips": "Sdcard Clips No To Remove Option",
+        "ssid1": "Primary SSID",
+        "ssid2": "Alternative SSID",
+        "ssid3": "Active SSID",
+        "storage": "Storage Option",
+        "svol": "Spk Vol",
+        "td": "Temperature Option",
+        "tem_float": "Temperature",
+        "videoautorate": "Bitrate Option",
+        "wifi": "Wifi"
+      }
+      
+    }
+  }

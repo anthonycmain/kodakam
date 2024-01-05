@@ -1,11 +1,13 @@
 import React, { useCallback, useEffect } from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Link, Tabs } from 'expo-router';
-import { Pressable } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
+import { I18nextProvider } from 'react-i18next';
+import i18n from '../translations/i18n';
 
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
@@ -24,18 +26,22 @@ export default function TabLayout() {
   
 
   return (
+    <I18nextProvider i18n={i18n}>
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         // Disable the static render of the header on web
         // to prevent a hydration error in React Navigation v6.
         headerShown: useClientOnlyValue(false, true),
+        headerStyle: { backgroundColor: Colors[colorScheme ?? 'light'].background },
+        tabBarInactiveBackgroundColor: Colors[colorScheme ?? 'light'].background,
+        tabBarActiveBackgroundColor: Colors[colorScheme ?? 'light'].background,
       }}>
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Tab One',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          title: 'Network Scanner',
+          tabBarIcon: ({ color }) => <TabBarIcon name="search" color={color} />,
           headerRight: () => (
             <Link href="/modal" asChild>
               <Pressable>
@@ -52,13 +58,8 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="two"
-        options={{
-          title: 'Tab Two',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-        }}
-      />
     </Tabs>
+    </I18nextProvider>
   );
 }
+
