@@ -1,6 +1,8 @@
 
 # Kodakam
 
+![mini-icon](https://github.com/anthonycmain/kodakam/assets/950131/5742001b-dd01-4b7d-8a8a-b472bb2d8811)
+
 **Description**:  After Kodak shutdown its Smart Home division I created this project to provide an app solution for those wanting to continue using their cameras.
 
 Other things to include:
