@@ -116,6 +116,22 @@ export default function TabOneScreen() {
       }
     })()
   }, [])
+
+  function getChargingIcon(value: string | null) {
+
+      const parsed: number = Number(value);
+
+      if (value != null) {
+        if (parsed >= 100.0) {
+          return <Image source={require('../../assets/images/icons/ic_battery_fully_charged.png')} />;
+      } else if (parsed > 0.0) {
+        return <Image source={require('../../assets/images/icons/ic_battery_charging.png')} />;
+      }
+      return <Image source={require('../../assets/images/icons/ic_battery_power_plugged.png')} />;
+
+    }
+  }
+
   return (
     <View style={styles.container}>
       
@@ -132,6 +148,9 @@ export default function TabOneScreen() {
           <View style={{ flex: 1, flexDirection: 'row'}}>
             <Image source={require('../../assets/images/camera-icon-1.png')} style={{width: 50, height: 50}} />
             <Text>IP: { item.ipAddress }</Text>
+            {
+              getChargingIcon(item.params.get('charge'))
+            }
           </View>
           
           <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
@@ -163,4 +182,5 @@ const styles = StyleSheet.create({
   deviceList: {
     marginTop: 20
   }
+  
 });

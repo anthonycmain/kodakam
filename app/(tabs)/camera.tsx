@@ -38,10 +38,10 @@ export default function CameraDetailsScreen() {
 
     // Get the camera infor
     const cameraAddress = 'http://' + local.id + '/';
-    console.log('Opening: ' + cameraAddress);
+    console.log('Connecting to: ' + cameraAddress);
 
     // Clear state
-    setCameraInfo(undefined);
+    setAllInfo([]);
 
     // Look through the get commands
     for (const key in allCommands) {
@@ -54,7 +54,7 @@ export default function CameraDetailsScreen() {
 
         const url = cameraAddress + '?req=' + command
 
-        console.log(url)
+        //console.log(url)
 
         fetch(url)
         .then(caminfo => {
@@ -73,7 +73,7 @@ export default function CameraDetailsScreen() {
               });
               
               let section: MySection ={
-                title: key,
+                title: command,
                 data: paramsArray
               } 
 
@@ -86,6 +86,7 @@ export default function CameraDetailsScreen() {
           });
         });
       }
+
     }
 
     // fetch(cameraAddress + '?req=get_caminfo')
@@ -155,7 +156,7 @@ export default function CameraDetailsScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{t('camera.title')} Details</Text>
-      <Text style={styles.title}>{ cameraInfo?.ipAddress} </Text>
+      <Text style={styles.title}>{ local.id } </Text>
       <Button onPress={ getCameraInfo } title='Query Camera'></Button>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
 
