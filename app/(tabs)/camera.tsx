@@ -1,13 +1,14 @@
-import { Button, FlatList, StyleSheet, TouchableOpacity, VirtualizedList } from 'react-native';
+import { Button, FlatList, SectionList, StyleSheet, TouchableOpacity, VirtualizedList } from 'react-native';
 
 import EditScreenInfo from '@/components/EditScreenInfo';
 import { Text, View } from '@/components/Themed';
 
 import LanPortScanner, { LSScanConfig, LSSingleScanResult } from 'react-native-lan-port-scanner';
 import { useCallback, useEffect, useState } from 'react';
-import CameraInfo from '@/types/CameraInfo';
+import CameraInfo, { getCommands, allCommands } from '@/types/CameraInfo';
 import { useGlobalSearchParams, useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { MonoText } from '@/components/StyledText';
 
 export default function CameraDetailsScreen() {
 
@@ -20,41 +21,102 @@ export default function CameraDetailsScreen() {
 
   const [params, setParams] = useState<{[key: string]: string}>();
 
+  //const [allInfo, setAllInfo] = useState<Array<{[key: string]: QueryParam[]}>>([]);
+  //const [allInfo, setAllInfo] = useState<Record<string, QueryParam[]>>({});
+  const [allInfo, setAllInfo] = useState<MySection[]>([]);
+  
+
+
   const { t } = useTranslation();
+  
+  interface MySection {
+    title: string;
+    data: QueryParam[];
+  }
   
   const getCameraInfo = useCallback(async () => {
 
     // Get the camera infor
-    const cameraAddress = 'http://' + local.id + '/?req=get_caminfo';
+    const cameraAddress = 'http://' + local.id + '/';
     console.log('Opening: ' + cameraAddress);
 
-    fetch(cameraAddress)
-      .then(caminfo => {
+    // Clear state
+    setCameraInfo(undefined);
 
-        caminfo.text().then(function (body) {
+    // Look through the get commands
+    for (const key in allCommands) {
 
-          const queryString = body.split('get_caminfo: ')[1];
+        const command = allCommands[key];
 
-          const params = new URLSearchParams(queryString);
+        //console.log('Processing: ' + command);
 
-          // Populate CameraInfo object
-          const cameraInfo: CameraInfo = {
-            ipAddress: local.id.toString(),
-            params: params
-          }
+        if (command.startsWith('get_')) {
 
+        const url = cameraAddress + '?req=' + command
 
-          let indexedArray: {[key: string]: number};
+        console.log(url)
 
-          //indexedArray = params.values();
+        fetch(url)
+        .then(caminfo => {
 
+          caminfo.text().then(function (body) {
 
-          setCameraInfo(cameraInfo);
+            const queryString = body.split(command + ': ')[1];
 
+            if (queryString != '-1') {
+
+              // Get all the params
+              const cameraParams = new URLSearchParams(queryString);
+              const paramsArray: QueryParam[] = [];
+              cameraParams.forEach((value, key) => {
+                paramsArray.push({ key, value });
+              });
+              
+              let section: MySection ={
+                title: key,
+                data: paramsArray
+              } 
+
+              let cameraDetails = allInfo;
+              cameraDetails.push(section);
+
+              setAllInfo(cameraDetails);
+            }
+
+          });
         });
+      }
+    }
+
+    // fetch(cameraAddress + '?req=get_caminfo')
+    //   .then(caminfo => {
+
+    //     caminfo.text().then(function (body) {
+
+    //       const queryString = body.split('get_caminfo: ')[1];
+
+    //       const cameraParams = new URLSearchParams(queryString);
+
+    //       // Populate CameraInfo object
+    //       const cameraInfo: CameraInfo = {
+    //         ipAddress: local.id.toString(),
+    //         params: cameraParams
+    //       }
+
+          
+
+
+    //       let indexedArray: {[key: string]: number};
+
+    //       //indexedArray = params.values();
+
+
+    //       setCameraInfo(cameraInfo);
+
+    //     });
 
         
-      });
+    //   });
       
       
 
@@ -76,20 +138,28 @@ export default function CameraDetailsScreen() {
     value: string;
   }
 
+  const renderSectionHeader = ({
+    section: { title },
+  }: {
+    section: MySection;
+  }) => <View style={styles.section}>
+        <MonoText>{title}</MonoText>
+      </View>;
+
+  const renderItem = ({ item }: { item: QueryParam }) => (
+    <Text>{`${item.key}, ${item.value}`}</Text>
+  );
   
-  const paramsArray: QueryParam[] = [];
-    cameraInfo?.params.forEach((value, key) => {
-      paramsArray.push({ key, value });
-    });
 
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{t('camera.title')} Details</Text>
       <Text style={styles.title}>{ cameraInfo?.ipAddress} </Text>
+      <Button onPress={ getCameraInfo } title='Query Camera'></Button>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
 
-      <FlatList
+      {/* <FlatList
         data={paramsArray}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => (
@@ -98,6 +168,13 @@ export default function CameraDetailsScreen() {
             <Text style={{padding: 10}}>{item.value}</Text>
           </View>
         )}
+      /> */}
+
+      <SectionList
+        sections={allInfo}
+        keyExtractor={(item) => item.key.toString()}
+        renderSectionHeader={renderSectionHeader}
+        renderItem={renderItem}
       />
 
     </View>
@@ -118,6 +195,11 @@ const styles = StyleSheet.create({
     marginVertical: 30,
     height: 1,
     width: '80%',
+  },
+  section: {
+    backgroundColor: 'pink',
+    fontWeight: 'bold'
+
   },
   paramList: {
     flex: 1,
