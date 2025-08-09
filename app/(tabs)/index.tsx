@@ -14,103 +14,127 @@ export default function TabOneScreen() {
   const [scanProgress, setScanProgress] = useState<number>(100);
   const router = useRouter();
   
-  const getNetworkInfo = useCallback(async () => {
 
-    const networkInfo = await LanPortScanner.getNetworkInfo();
-
-    const ipRangeInfo = await LanPortScanner.generateIPRange(networkInfo);
-
-    console.log('Range' + ipRangeInfo.ipRange);
-  }, []);
 
   const performScan = useCallback(async () => {
+    try {
+      if (scanProgress == 100) {
+        console.log('=== STARTING NETWORK SCAN ===');
+        
+        // Clear the device list
+        setDevices([]);
+        setScanProgress(0);
 
-    if (scanProgress == 100) {
+        const networkInfo = await LanPortScanner.getNetworkInfo();
+        console.log('Network Info:', networkInfo);
 
-      const networkInfo = await LanPortScanner.getNetworkInfo();
+        if (!networkInfo) {
+          console.error('Failed to get network info');
+          alert('Failed to get network information. Please check your WiFi connection.');
+          setScanProgress(100);
+          return;
+        }
 
-      // Clear the device list
-      setDevices([]);
+        // Check if we're on emulator (10.0.2.x network) and handle differently
+        if (networkInfo.ipAddress?.startsWith('10.0.2.')) {
+          console.log('🚨 Running on Android Emulator - cannot scan host WiFi network directly');
+          console.log('💡 Emulator is on 10.0.2.x but your camera is likely on 192.168.178.x');
+          alert('Android Emulator Detected!\n\nThe emulator cannot directly scan your WiFi network where the camera is located.\n\nPlease use a real Android device connected to the same WiFi as your camera for network scanning.');
+          setScanProgress(100);
+          return;
+        }
 
-      // Override to just my camera for now
-      //const ipRange = ['192.168.178.36'];
+        // Override to just my camera for now (when on real device)
+        //const ipRange = ['192.168.178.36'];
 
-      const config1: LSScanConfig = {
-        networkInfo: networkInfo,
-        //ipRange: ipRange,
-        ports: [80], //Specify port here
-        timeout: 1000, //Timeout for each thread in ms
-        threads: 150, //Number of threads
-        logging: false
-      };
+        const config1: LSScanConfig = {
+          networkInfo: networkInfo,
+          //ipRange: ipRange,
+          ports: [80], //Specify port here
+          timeout: 2000, //Increased timeout for better reliability
+          threads: 50, //Reduced threads for better stability
+          logging: true //Enable logging for debugging
+        };
 
-      console.log('<< STARTING SCAN >>');
+        console.log('Scan config:', config1);
 
-      let results: Array<CameraInfo> = [];
+        let results: Array<CameraInfo> = [];
 
-      const cancelScanHandle = LanPortScanner.startScan(
-        config1, //or config2
-        (totalHosts: number, hostScanned: number) => {
-          setScanProgress(Math.round(hostScanned/totalHosts*100));
-        },
-        (result) => {
+        const cancelScanHandle = LanPortScanner.startScan(
+          config1,
+          (totalHosts: number, hostScanned: number) => {
+            const progress = Math.round(hostScanned/totalHosts*100);
+            console.log(`Scan progress: ${hostScanned}/${totalHosts} (${progress}%)`);
+            setScanProgress(progress);
+          },
+          (result) => {
+            console.log('Found open port:', result);
 
-          if (result != null) {
+            if (result != null) {
+              // Get the camera info
+              const cameraAddress = 'http://' + result.ip + '/?req=get_caminfo';
+              console.log('Checking camera at:', cameraAddress);
 
-            // Get the camera infor
-            const cameraAddress = 'http://' + result.ip + '/?req=get_caminfo';
-            console.log('Checking: ' + cameraAddress);
-
-            fetch(cameraAddress)
-            .then(caminfo => {
-              caminfo.text().then(function (body) {
+              fetch(cameraAddress, {
+                method: 'GET',
+                timeout: 5000,
+              })
+              .then(caminfo => {
+                console.log('Response status:', caminfo.status);
+                return caminfo.text();
+              })
+              .then(function (body) {
+                console.log('Response body from', result.ip, ':', body.substring(0, 100));
 
                 if (body.startsWith('get_caminfo')) {
                   // Found a camera
+                  console.log('✅ Found Kodak camera at:', result.ip);
 
                   const queryString = body.split('get_caminfo: ')[1];
-
                   const params = new URLSearchParams(queryString);
 
                   // Populate CameraInfo object
                   const cameraInfo: CameraInfo = {
                     ipAddress: result.ip,
                     params: params
-
                   }
 
                   results.push(cameraInfo);
-
-                  setDevices(results);
+                  console.log('Added camera to results:', cameraInfo);
+                  
+                  // Update devices state with new array
+                  setDevices([...results]);
+                } else {
+                  console.log('❌ Not a Kodak camera at:', result.ip);
                 }
-                
-                
+              })
+              .catch(error => {
+                console.log('Error checking camera at', result.ip, ':', error.message);
               });
-              
-
-            });
-
-            //
+            }
+          },
+          (scanResults) => {
+            console.log('=== SCAN COMPLETED ===');
+            console.log('Total cameras found:', results.length);
+            console.log('Final scan results:', scanResults);
+            setScanProgress(100);
           }
-
-        },
-        (results) => {
-          //console.log(results); // This will call after scan end.
-          console.log('<< FINISHED SCAN >>');
-        }
-      );
+        );
+      } else {
+        alert('Scan is already in progress');
+      }
+    } catch (error) {
+      console.error('Error during scan:', error);
+      alert('Scan failed: ' + error.message);
+      setScanProgress(100);
     }
-    else {
-      alert('Scan is already in progress');
-    }
-
-  }, []);
+  }, [scanProgress]);
 
   useEffect(() => {
     void (async () => {
       try {
-        //await getNetworkInfo();
-        await performScan();
+        // Don't auto-scan on startup, let user trigger it manually
+        console.log('App loaded, ready for manual scan');
       } catch (e) {
         console.error(e)
       }
@@ -141,6 +165,12 @@ export default function TabOneScreen() {
       </TouchableOpacity>
 
       <Text> Scan Progress:  { (scanProgress == 100 ? 'Complete': scanProgress + '%') } </Text>
+      
+      <Text style={styles.helpText}>
+        📱 For network scanning to work, use a real Android device connected to the same WiFi network as your camera.
+        {'\n\n'}
+        🚫 Android emulators cannot scan WiFi networks directly.
+      </Text>
 
       <FlatList
         data={devices}
@@ -240,5 +270,13 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 14,
+  },
+  helpText: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
+    marginHorizontal: 20,
+    marginVertical: 10,
+    lineHeight: 16,
   },
 });
