@@ -138,6 +138,416 @@ export const allCommands = {
     "URL_SET_CMD":"url_set",
 }
 
+// Command definitions with their parameters and value options
+export interface CommandParameter {
+    name: string;
+    type: 'select' | 'number' | 'text' | 'boolean';
+    required: boolean;
+    options?: string[] | number[] | { label: string; value: string | number }[];
+    description?: string;
+    min?: number;
+    max?: number;
+}
+
+export interface CameraCommand {
+    command: string;
+    description: string;
+    category: 'get' | 'set' | 'action';
+    parameters: CommandParameter[];
+}
+
+export const cameraCommands: { [key: string]: CameraCommand } = {
+    // GET Commands
+    "get_caminfo": {
+        command: "get_caminfo",
+        description: "Get camera information",
+        category: "get",
+        parameters: []
+    },
+    "get_temp_humid": {
+        command: "get_temp_humid",
+        description: "Get temperature and humidity",
+        category: "get",
+        parameters: []
+    },
+    "get_version": {
+        command: "get_version",
+        description: "Get firmware version",
+        category: "get",
+        parameters: []
+    },
+    "get_wifi_strength": {
+        command: "get_wifi_strength",
+        description: "Get WiFi signal strength",
+        category: "get",
+        parameters: []
+    },
+    "get_night_vision": {
+        command: "get_night_vision",
+        description: "Get night vision status",
+        category: "get",
+        parameters: []
+    },
+    
+    // SET Commands
+    "set_flipup": {
+        command: "set_flipup",
+        description: "Set camera flip (ceiling mount)",
+        category: "set",
+        parameters: [
+            {
+                name: "value",
+                type: "select",
+                required: true,
+                options: [
+                    { label: "Normal", value: 0 },
+                    { label: "Ceiling Mount", value: 1 }
+                ],
+                description: "0=normal, 1=ceiling mount"
+            }
+        ]
+    },
+    "set_flicker": {
+        command: "set_flicker",
+        description: "Set flicker frequency",
+        category: "set",
+        parameters: [
+            {
+                name: "value",
+                type: "select",
+                required: true,
+                options: [50, 60],
+                description: "Flicker frequency in Hz"
+            }
+        ]
+    },
+    "set_night_vision": {
+        command: "set_night_vision",
+        description: "Set night vision mode",
+        category: "set",
+        parameters: [
+            {
+                name: "value",
+                type: "select",
+                required: true,
+                options: [
+                    { label: "Auto", value: 0 },
+                    { label: "On", value: 1 },
+                    { label: "Off", value: 2 }
+                ],
+                description: "Night vision mode"
+            }
+        ]
+    },
+    "set_motion_source": {
+        command: "set_motion_source",
+        description: "Set motion detection",
+        category: "set",
+        parameters: [
+            {
+                name: "value",
+                type: "select",
+                required: true,
+                options: [
+                    { label: "Off", value: 0 },
+                    { label: "On", value: 1 }
+                ],
+                description: "Motion detection on/off"
+            },
+            {
+                name: "schedule",
+                type: "select",
+                required: false,
+                options: [
+                    { label: "Off", value: 0 },
+                    { label: "On", value: 1 }
+                ],
+                description: "Schedule mode"
+            }
+        ]
+    },
+    "set_motion_sensitivity": {
+        command: "set_motion_sensitivity",
+        description: "Set motion sensitivity",
+        category: "set",
+        parameters: [
+            {
+                name: "value",
+                type: "select",
+                required: true,
+                options: [
+                    { label: "Low", value: 1 },
+                    { label: "Medium", value: 3 },
+                    { label: "High", value: 5 }
+                ],
+                description: "Motion sensitivity level"
+            }
+        ]
+    },
+    "set_motion_storage": {
+        command: "set_motion_storage",
+        description: "Set motion storage location",
+        category: "set",
+        parameters: [
+            {
+                name: "value",
+                type: "select",
+                required: true,
+                options: [
+                    { label: "SD Card", value: 0 },
+                    { label: "Cloud", value: 1 }
+                ],
+                description: "Storage location for motion recordings"
+            }
+        ]
+    },
+    "set_sound_detection": {
+        command: "set_sound_detection",
+        description: "Set sound detection",
+        category: "set",
+        parameters: [
+            {
+                name: "value",
+                type: "select",
+                required: true,
+                options: [
+                    { label: "Off", value: 0 },
+                    { label: "On", value: 1 }
+                ],
+                description: "Sound detection on/off"
+            },
+            {
+                name: "sensitivity",
+                type: "select",
+                required: false,
+                options: [
+                    { label: "Low", value: 1 },
+                    { label: "Medium", value: 3 },
+                    { label: "High", value: 5 }
+                ],
+                description: "Sound sensitivity level"
+            },
+            {
+                name: "schedule",
+                type: "select",
+                required: false,
+                options: [
+                    { label: "Off", value: 0 },
+                    { label: "On", value: 1 }
+                ],
+                description: "Schedule mode"
+            }
+        ]
+    },
+    "set_resolution": {
+        command: "set_resolution",
+        description: "Set video resolution",
+        category: "set",
+        parameters: [
+            {
+                name: "value",
+                type: "select",
+                required: true,
+                options: [
+                    { label: "480p (Normal)", value: 480 },
+                    { label: "720p (HD)", value: 720 }
+                ],
+                description: "Video resolution"
+            }
+        ]
+    },
+    "set_blue_led": {
+        command: "set_blue_led",
+        description: "Set blue LED settings",
+        category: "set",
+        parameters: [
+            {
+                name: "enable",
+                type: "select",
+                required: true,
+                options: [
+                    { label: "Off", value: 0 },
+                    { label: "On", value: 1 }
+                ],
+                description: "Blue LED enable/disable"
+            },
+            {
+                name: "on_time",
+                type: "number",
+                required: false,
+                min: 0,
+                max: 600,
+                description: "LED on time in seconds (default: 180)"
+            },
+            {
+                name: "red_led_affect",
+                type: "select",
+                required: false,
+                options: [
+                    { label: "No", value: 0 },
+                    { label: "Yes", value: 1 }
+                ],
+                description: "Affect red LED"
+            }
+        ]
+    },
+    "melody_vol": {
+        command: "melody_vol",
+        description: "Set melody volume",
+        category: "set",
+        parameters: [
+            {
+                name: "value",
+                type: "number",
+                required: true,
+                min: 0,
+                max: 5,
+                description: "Volume level (0-5)"
+            }
+        ]
+    },
+    
+    // ACTION Commands
+    "melody1": {
+        command: "melody1",
+        description: "Play melody 1",
+        category: "action",
+        parameters: [
+            {
+                name: "duration",
+                type: "select",
+                required: false,
+                options: [
+                    { label: "5 seconds", value: 1 },
+                    { label: "10 seconds", value: 2 },
+                    { label: "15 seconds", value: 3 }
+                ],
+                description: "Play duration"
+            }
+        ]
+    },
+    "melody2": {
+        command: "melody2",
+        description: "Play melody 2",
+        category: "action",
+        parameters: [
+            {
+                name: "duration",
+                type: "select",
+                required: false,
+                options: [
+                    { label: "5 seconds", value: 1 },
+                    { label: "10 seconds", value: 2 },
+                    { label: "15 seconds", value: 3 }
+                ],
+                description: "Play duration"
+            }
+        ]
+    },
+    "melody3": {
+        command: "melody3",
+        description: "Play melody 3",
+        category: "action",
+        parameters: [
+            {
+                name: "duration",
+                type: "select",
+                required: false,
+                options: [
+                    { label: "5 seconds", value: 1 },
+                    { label: "10 seconds", value: 2 },
+                    { label: "15 seconds", value: 3 }
+                ],
+                description: "Play duration"
+            }
+        ]
+    },
+    "melody4": {
+        command: "melody4",
+        description: "Play melody 4",
+        category: "action",
+        parameters: [
+            {
+                name: "duration",
+                type: "select",
+                required: false,
+                options: [
+                    { label: "5 seconds", value: 1 },
+                    { label: "10 seconds", value: 2 },
+                    { label: "15 seconds", value: 3 }
+                ],
+                description: "Play duration"
+            }
+        ]
+    },
+    "melody5": {
+        command: "melody5",
+        description: "Play melody 5",
+        category: "action",
+        parameters: [
+            {
+                name: "duration",
+                type: "select",
+                required: false,
+                options: [
+                    { label: "5 seconds", value: 1 },
+                    { label: "10 seconds", value: 2 },
+                    { label: "15 seconds", value: 3 }
+                ],
+                description: "Play duration"
+            }
+        ]
+    },
+    "melodystop": {
+        command: "melodystop",
+        description: "Stop melody",
+        category: "action",
+        parameters: []
+    },
+    "restart_system": {
+        command: "restart_system",
+        description: "Restart camera system",
+        category: "action",
+        parameters: []
+    },
+    "pair_stop": {
+        command: "pair_stop",
+        description: "Restart camera (pairing stop)",
+        category: "action",
+        parameters: [
+            {
+                name: "silence",
+                type: "select",
+                required: false,
+                options: [
+                    { label: "No", value: 0 },
+                    { label: "Yes", value: 1 }
+                ],
+                description: "Silent restart"
+            }
+        ]
+    },
+    "change_router_info": {
+        command: "change_router_info",
+        description: "Change WiFi router information",
+        category: "set",
+        parameters: [
+            {
+                name: "ssid",
+                type: "text",
+                required: true,
+                description: "WiFi network name (SSID)"
+            },
+            {
+                name: "password",
+                type: "text",
+                required: true,
+                description: "WiFi password"
+            }
+        ]
+    }
+}
+
 /*
 /?req=get_caminfo
 get_caminfo: flicker=50&flipup=0&fliplr=0&brate=550&svol=2&mvol=22&wifi=78&bat=14&hum=-1&tem=-273&hum_float=-1.0&tem_float=-273.0&storage=1&md=0:0:3:0&sd=0:2:3:0&td=0:3:1529:0&lbd=1:0:1:0&ir=0&lulla=0&res=720&sdcap=-113&sdfree=0&sdatrm=1&sdnoclips=10&mdled=0&ca=1&charge=0&lulvol=3&isp_idx=1&agc_lvl=0&ssid1=Zen+7530&ssid2=&ssid3=Zen+7530&hw_id=6&puscan=1&pu_ana_en=1&rtscan=1&panel_vox=0&charge_dur=105&mvr=1&dnsm=192.168.178.1&dnss=208.20.63.0&wifi_env=300000000000001&lulla_dur=15&localip=192.168.178.36&sync_channel=3&rp_pair=0&rp_conn=disconnect&blue_led_en=1&blue_led_ontime=180&red_led_affect=0&block_pu_upgrade=0&pu_fw_pkg=00.00.00&advise_homemode=1&snapshot_storage=1&soc_ver=517260&

@@ -2,6 +2,8 @@ import { Button, FlatList, SectionList, StyleSheet, TouchableOpacity, Virtualize
 
 import EditScreenInfo from '@/components/EditScreenInfo';
 import { Text, View } from '@/components/Themed';
+import CameraCommandInterface from '@/components/CameraCommandInterface';
+import SimpleTest from '@/components/SimpleTest';
 
 import LanPortScanner, { LSScanConfig, LSSingleScanResult } from 'react-native-lan-port-scanner';
 import { useCallback, useEffect, useState } from 'react';
@@ -24,7 +26,8 @@ export default function CameraDetailsScreen() {
   //const [allInfo, setAllInfo] = useState<Array<{[key: string]: QueryParam[]}>>([]);
   //const [allInfo, setAllInfo] = useState<Record<string, QueryParam[]>>({});
   const [allInfo, setAllInfo] = useState<MySection[]>([]);
-  
+  const [showCommandInterface, setShowCommandInterface] = useState(false);
+  const [showSimpleTest, setShowSimpleTest] = useState(false);
 
 
   const { t } = useTranslation();
@@ -153,11 +156,65 @@ export default function CameraDetailsScreen() {
   
 
 
+  if (showSimpleTest) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => setShowSimpleTest(false)}
+          >
+            <Text style={styles.backButtonText}>← Back to Camera</Text>
+          </TouchableOpacity>
+        </View>
+        <SimpleTest />
+      </View>
+    );
+  }
+
+  if (showCommandInterface) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => setShowCommandInterface(false)}
+          >
+            <Text style={styles.backButtonText}>← Back to Info</Text>
+          </TouchableOpacity>
+        </View>
+        <CameraCommandInterface cameraAddress={`http://${local.id}/`} />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{t('camera.title')} Details</Text>
       <Text style={styles.title}>{ local.id } </Text>
-      <Button onPress={ getCameraInfo } title='Query Camera'></Button>
+      
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.button} onPress={getCameraInfo}>
+          <Text style={styles.buttonText}>Query Camera</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={[styles.button, styles.commandButton]} 
+          onPress={() => setShowCommandInterface(true)}
+        >
+          <Text style={styles.buttonText}>Send Commands</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity 
+          style={[styles.button, { backgroundColor: '#FF6B6B' }]} 
+          onPress={() => setShowSimpleTest(true)}
+        >
+          <Text style={styles.buttonText}>🧪 Test Buttons</Text>
+        </TouchableOpacity>
+      </View>
+
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
 
       {/* <FlatList
@@ -191,6 +248,44 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
+  },
+  header: {
+    width: '100%',
+    alignItems: 'flex-start',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+  backButton: {
+    backgroundColor: '#007AFF',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  backButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '90%',
+    marginVertical: 10,
+  },
+  button: {
+    backgroundColor: '#007AFF',
+    borderRadius: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    minWidth: 120,
+    alignItems: 'center',
+  },
+  commandButton: {
+    backgroundColor: '#34C759',
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 14,
   },
   separator: {
     marginVertical: 30,
