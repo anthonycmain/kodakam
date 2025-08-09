@@ -48,20 +48,6 @@ export default function TabLayout() {
         options={{
           title: 'Network Scanner',
           tabBarIcon: ({ color }) => <TabBarIcon name="wifi" color={color} />,
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable>
-                {({ pressed }) => (
-                  <FontAwesome
-                    name="info-circle"
-                    size={25}
-                    color={Colors[colorScheme ?? 'light'].text}
-                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
-                  />
-                )}
-              </Pressable>
-            </Link>
-          ),
         }}
       />
       <Tabs.Screen
@@ -69,7 +55,6 @@ export default function TabLayout() {
         options={{
           title: 'Camera Details',
           tabBarIcon: ({ color }) => <TabBarIcon name="video-camera" color={color} />,
-          headerBackTitle: 'Back',
         }}
       />
 
