@@ -36,10 +36,9 @@ export default function CameraCommandInterface({ cameraAddress }: CameraCommandI
   const [showPickerModal, setShowPickerModal] = useState(false);
   const [currentPickerParam, setCurrentPickerParam] = useState<CommandParameter | null>(null);
   const [pickerOptions, setPickerOptions] = useState<Array<{label: string, value: any}>>([]);
-
-  // Debug logging
-  console.log('CameraCommandInterface rendered with address:', cameraAddress);
-  console.log('Available camera commands:', Object.keys(cameraCommands));
+  
+  // Command picker state
+  const [showCommandModal, setShowCommandModal] = useState(false);
 
   const commandOptions = Object.keys(cameraCommands).map(key => ({
     label: `${cameraCommands[key].description} (${key})`,
@@ -47,19 +46,12 @@ export default function CameraCommandInterface({ cameraAddress }: CameraCommandI
     category: cameraCommands[key].category,
   }));
 
-  console.log('Command options:', commandOptions);
-
   // Group commands by category
   const getCommands = commandOptions.filter(cmd => cmd.category === 'get');
   const setCommands = commandOptions.filter(cmd => cmd.category === 'set');
   const actionCommands = commandOptions.filter(cmd => cmd.category === 'action');
 
-  console.log('GET commands:', getCommands);
-  console.log('SET commands:', setCommands);
-  console.log('Action commands:', actionCommands);
-
   const handleCommandChange = (command: string) => {
-    console.log('Command selected:', command);
     setSelectedCommand(command);
     setParameterValues({});
     setResponse('');
@@ -94,6 +86,16 @@ export default function CameraCommandInterface({ cameraAddress }: CameraCommandI
     }
     setShowPickerModal(false);
     setCurrentPickerParam(null);
+  };
+
+  const openCommandModal = () => {
+    setShowCommandModal(true);
+  };
+
+  const selectCommand = (commandKey: string) => {
+    setSelectedCommand(commandKey);
+    setParameterValues({}); // Clear parameters when changing command
+    setShowCommandModal(false);
   };
 
   const buildCommandUrl = (command: CameraCommand): string => {
@@ -181,9 +183,6 @@ export default function CameraCommandInterface({ cameraAddress }: CameraCommandI
   };
 
   const executeCommand = async () => {
-    console.log('Execute button pressed!');
-    console.log('Selected command:', selectedCommand);
-    console.log('Parameter values:', parameterValues);
     
     if (!selectedCommand) {
       Alert.alert('Error', 'Please select a command');
@@ -201,7 +200,6 @@ export default function CameraCommandInterface({ cameraAddress }: CameraCommandI
 
     try {
       const url = buildCommandUrl(command);
-      console.log('Executing command:', url);
 
       // Set a timeout for the request (10 seconds)
       const timeoutId = setTimeout(() => {
@@ -223,8 +221,6 @@ export default function CameraCommandInterface({ cameraAddress }: CameraCommandI
       }
       
       const responseText = await fetchResponse.text();
-      
-      console.log('Raw response:', responseText);
       
       if (!responseText || responseText.trim() === '') {
         setResponse('Command executed but camera returned no data.');
@@ -359,92 +355,41 @@ export default function CameraCommandInterface({ cameraAddress }: CameraCommandI
     }
   };
 
-  const renderCommandSection = (title: string, commands: typeof commandOptions) => (
-    <View style={styles.sectionContainer}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-      {title === 'GET Commands' && (
-        <Text style={styles.sectionDescription}>
-          GET commands retrieve information from the camera and display the results in a popup.
-        </Text>
-      )}
-      {title === 'SET Commands' && (
-        <Text style={styles.sectionDescription}>
-          SET commands configure camera settings. Configure parameters below before executing.
-        </Text>
-      )}
-      {title === 'Action Commands' && (
-        <Text style={styles.sectionDescription}>
-          Action commands trigger immediate actions like playing melodies or restarting the camera.
-        </Text>
-      )}
-      {commands.map((cmd) => (
-        <TouchableOpacity
-          key={cmd.value}
-          style={[
-            styles.commandOption,
-            selectedCommand === cmd.value && styles.selectedCommand
-          ]}
-          onPress={() => {
-            console.log('TouchableOpacity pressed for command:', cmd.value);
-            handleCommandChange(cmd.value);
-          }}
-        >
-          <Text style={[
-            styles.commandText,
-            selectedCommand === cmd.value && styles.selectedCommandText
-          ]}>
-            {cmd.label}
-          </Text>
-        </TouchableOpacity>
-      ))}
-    </View>
-  );
+
 
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Camera Commands</Text>
       <Text style={styles.address}>Camera: {cameraAddress}</Text>
       
-      <TouchableOpacity 
-        style={[styles.executeButton, { backgroundColor: '#FF6B6B', marginBottom: 16 }]}
-        onPress={() => {
-          console.log('Test button pressed!');
-          Alert.alert('Test', 'Button is working! Check console for logs.');
-        }}
-      >
-        <Text style={styles.executeButtonText}>🧪 Test Button (Press Me First)</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity 
-        style={[styles.executeButton, { backgroundColor: '#9C27B0', marginBottom: 16 }]}
-        onPress={() => {
-          console.log('Direct command test!');
-          setSelectedCommand('get_caminfo');
-          Alert.alert('Test', 'Manually selected get_caminfo command!');
-        }}
-      >
-        <Text style={styles.executeButtonText}>🔧 Direct Select Test</Text>
-      </TouchableOpacity>
-      
       <View style={styles.infoContainer}>
         <Text style={styles.infoText}>
-          💡 Tip: GET commands will display their results in a popup window. 
-          The output shows all the camera settings and status information.
+          💡 Tip: GET commands display results in a popup. SET commands change camera settings. Action commands trigger immediate actions.
         </Text>
       </View>
 
-      {selectedCommand && (
-        <View style={[styles.infoContainer, { backgroundColor: '#E8F5E8' }]}>
-          <Text style={[styles.infoText, { color: '#2E7D32' }]}>
-            ✅ Selected: {selectedCommand}
-          </Text>
-        </View>
-      )}
-
       {/* Command Selection */}
-      {renderCommandSection('GET Commands', getCommands)}
-      {renderCommandSection('SET Commands', setCommands)}
-      {renderCommandSection('Action Commands', actionCommands)}
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionTitle}>Select Command</Text>
+        <Text style={styles.sectionDescription}>
+          Choose a camera command to execute. GET commands retrieve info, SET commands change settings, and Action commands trigger actions.
+        </Text>
+        <TouchableOpacity
+          style={styles.modalPickerButton}
+          onPress={openCommandModal}
+        >
+          <Text style={[
+            styles.modalPickerText,
+            !selectedCommand && styles.modalPickerPlaceholder
+          ]}>
+            {selectedCommand ? 
+              `${cameraCommands[selectedCommand]?.description} (${selectedCommand})` : 
+              'Select a command...'
+            }
+          </Text>
+          <Text style={styles.modalPickerArrow}>▼</Text>
+        </TouchableOpacity>
+      </View>
 
       {/* Parameter Inputs */}
       {selectedCommand && (
@@ -540,6 +485,46 @@ export default function CameraCommandInterface({ cameraAddress }: CameraCommandI
           />
         </View>
       </Modal>
+
+      {/* Command Selection Modal */}
+      <Modal
+        visible={showCommandModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        transparent={false}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Select Command</Text>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setShowCommandModal(false)}
+            >
+              <Text style={styles.closeButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+          <FlatList
+            data={commandOptions}
+            keyExtractor={(item) => item.value}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.pickerOption}
+                onPress={() => selectCommand(item.value)}
+              >
+                <View style={styles.commandModalItem}>
+                  <Text style={styles.commandModalTitle}>{item.label}</Text>
+                  <Text style={styles.commandModalCategory}>
+                    {item.category.toUpperCase()} Command
+                  </Text>
+                </View>
+                {selectedCommand === item.value && (
+                  <Text style={styles.pickerCheckmark}>✓</Text>
+                )}
+              </TouchableOpacity>
+            )}
+          />
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -589,26 +574,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     fontStyle: 'italic',
   },
-  commandOption: {
-    backgroundColor: 'white',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 4,
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  selectedCommand: {
-    backgroundColor: '#007AFF',
-    borderColor: '#007AFF',
-  },
-  commandText: {
-    fontSize: 14,
-    color: '#333',
-  },
-  selectedCommandText: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
+
   parametersSection: {
     marginTop: 20,
     marginBottom: 20,
@@ -752,5 +718,21 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#007AFF',
     fontWeight: 'bold',
+  },
+  commandModalItem: {
+    flex: 1,
+    marginRight: 12,
+  },
+  commandModalTitle: {
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '500',
+    marginBottom: 2,
+  },
+  commandModalCategory: {
+    fontSize: 12,
+    color: '#666',
+    textTransform: 'uppercase',
+    fontWeight: '400',
   },
 });

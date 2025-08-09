@@ -1,9 +1,8 @@
-import { Button, FlatList, SectionList, StyleSheet, TouchableOpacity, VirtualizedList } from 'react-native';
+import { Button, FlatList, SectionList, StyleSheet, TouchableOpacity, VirtualizedList, ActivityIndicator } from 'react-native';
 
 import EditScreenInfo from '@/components/EditScreenInfo';
 import { Text, View } from '@/components/Themed';
 import CameraCommandInterface from '@/components/CameraCommandInterface';
-import SimpleTest from '@/components/SimpleTest';
 
 import LanPortScanner, { LSScanConfig, LSSingleScanResult } from 'react-native-lan-port-scanner';
 import { useCallback, useEffect, useState } from 'react';
@@ -27,7 +26,8 @@ export default function CameraDetailsScreen() {
   //const [allInfo, setAllInfo] = useState<Record<string, QueryParam[]>>({});
   const [allInfo, setAllInfo] = useState<MySection[]>([]);
   const [showCommandInterface, setShowCommandInterface] = useState(false);
-  const [showSimpleTest, setShowSimpleTest] = useState(false);
+
+  const [isQuerying, setIsQuerying] = useState(false);
 
 
   const { t } = useTranslation();
@@ -38,36 +38,36 @@ export default function CameraDetailsScreen() {
   }
   
   const getCameraInfo = useCallback(async () => {
+    // Prevent multiple simultaneous queries
+    if (isQuerying) {
+      return;
+    }
 
-    // Get the camera infor
+    // Get the camera info
     const cameraAddress = 'http://' + local.id + '/';
     console.log('Connecting to: ' + cameraAddress);
 
-    // Clear state
+    // Set loading state and clear previous data immediately
+    setIsQuerying(true);
     setAllInfo([]);
+
+    // Collect all promises to wait for completion
+    const queryPromises: Promise<void>[] = [];
 
     // Look through the get commands
     for (const key in allCommands) {
+      const command = allCommands[key];
 
-        const command = allCommands[key];
+      if (command.startsWith('get_')) {
+        const url = cameraAddress + '?req=' + command;
 
-        //console.log('Processing: ' + command);
-
-        if (command.startsWith('get_')) {
-
-        const url = cameraAddress + '?req=' + command
-
-        //console.log(url)
-
-        fetch(url)
-        .then(caminfo => {
-
-          caminfo.text().then(function (body) {
-
+        // Create a promise for each query
+        const queryPromise = fetch(url)
+          .then(caminfo => caminfo.text())
+          .then(body => {
             const queryString = body.split(command + ': ')[1];
 
-            if (queryString != '-1') {
-
+            if (queryString && queryString !== '-1') {
               // Get all the params
               const cameraParams = new URLSearchParams(queryString);
               const paramsArray: QueryParam[] = [];
@@ -75,21 +75,31 @@ export default function CameraDetailsScreen() {
                 paramsArray.push({ key, value });
               });
               
-              let section: MySection ={
+              const section: MySection = {
                 title: command,
                 data: paramsArray
-              } 
+              };
 
-              let cameraDetails = allInfo;
-              cameraDetails.push(section);
-
-              setAllInfo(cameraDetails);
+              // Use functional update to avoid stale state issues
+              setAllInfo(prevInfo => [...prevInfo, section]);
             }
-
+          })
+          .catch(error => {
+            console.error(`Failed to query ${command}:`, error);
+            // You could add error sections here if desired
           });
-        });
-      }
 
+        queryPromises.push(queryPromise);
+      }
+    }
+
+    // Wait for all queries to complete
+    try {
+      await Promise.allSettled(queryPromises);
+    } catch (error) {
+      console.error('Error during camera queries:', error);
+    } finally {
+      setIsQuerying(false);
     }
 
     // fetch(cameraAddress + '?req=get_caminfo')
@@ -347,21 +357,7 @@ export default function CameraDetailsScreen() {
   
 
 
-  if (showSimpleTest) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity 
-            style={styles.backButton}
-            onPress={() => setShowSimpleTest(false)}
-          >
-            <Text style={styles.backButtonText}>← Back to Camera</Text>
-          </TouchableOpacity>
-        </View>
-        <SimpleTest />
-      </View>
-    );
-  }
+
 
   if (showCommandInterface) {
     return (
@@ -385,8 +381,16 @@ export default function CameraDetailsScreen() {
       <Text style={styles.title}>{ local.id } </Text>
       
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button} onPress={getCameraInfo}>
-          <Text style={styles.buttonText}>Query Camera</Text>
+        <TouchableOpacity 
+          style={[styles.button, isQuerying && styles.buttonDisabled]} 
+          onPress={getCameraInfo}
+          disabled={isQuerying}
+        >
+          {isQuerying ? (
+            <ActivityIndicator size="small" color="white" />
+          ) : (
+            <Text style={styles.buttonText}>Query Camera</Text>
+          )}
         </TouchableOpacity>
         
         <TouchableOpacity 
@@ -397,14 +401,7 @@ export default function CameraDetailsScreen() {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity 
-          style={[styles.button, { backgroundColor: '#FF6B6B' }]} 
-          onPress={() => setShowSimpleTest(true)}
-        >
-          <Text style={styles.buttonText}>🧪 Test Buttons</Text>
-        </TouchableOpacity>
-      </View>
+
 
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
 
@@ -419,6 +416,13 @@ export default function CameraDetailsScreen() {
         )}
       /> */}
 
+      {isQuerying && allInfo.length === 0 && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#007AFF" />
+          <Text style={styles.loadingText}>Querying camera...</Text>
+        </View>
+      )}
+
       <SectionList
         sections={allInfo}
         keyExtractor={(item) => item.key.toString()}
@@ -427,6 +431,8 @@ export default function CameraDetailsScreen() {
         style={styles.fullWidthList}
         contentContainerStyle={styles.listContainer}
       />
+
+
 
     </View>
   );
@@ -471,6 +477,10 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     minWidth: 120,
     alignItems: 'center',
+  },
+  buttonDisabled: {
+    backgroundColor: '#999',
+    opacity: 0.6,
   },
   commandButton: {
     backgroundColor: '#34C759',
@@ -544,5 +554,17 @@ const styles = StyleSheet.create({
   listContainer: {
     paddingBottom: 20,
     width: '100%',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
   }
 });
