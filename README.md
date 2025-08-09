@@ -95,20 +95,39 @@
 
 #### GET Commands (Information Retrieval)
 - `get_caminfo` - Complete camera status and settings
-- `get_temperature` - Current temperature reading
-- `get_battery` - Battery level and charging status
-- `get_wifi` - WiFi signal strength and connection info
+- `get_temp_humid` - Temperature and humidity readings
+- `get_version` - Firmware version information
+- `get_wifi_strength` - WiFi signal strength
+- `get_night_vision` - Current night vision mode status
 
 #### SET Commands (Configuration)
-- `set_flipup` - Toggle camera orientation (Normal/Ceiling Mount)
-- `set_motiondet` - Configure motion detection sensitivity (1, 3, 5)
-- `set_recordquality` - Set video recording quality
-- `set_nightvision` - Enable/disable night vision mode
+**Camera Orientation & Video:**
+- `set_flipup` - Camera orientation (Normal/Ceiling Mount)
+- `set_flicker` - Flicker frequency (50Hz/60Hz)
+- `set_resolution` - Video resolution settings
+- `set_night_vision` - Night vision mode (Auto/On/Off)
+
+**Motion & Sound Detection:**
+- `set_motion_source` - Motion detection on/off
+- `set_motion_sensitivity` - Motion sensitivity (Low/Medium/High)
+- `set_motion_storage` - Motion recording storage (SD Card/Cloud)
+- `set_sound_detection` - Sound detection settings with sensitivity
+
+**System & Connectivity:**
+- `set_blue_led` - Blue LED indicator settings
+- `change_router_info` - Change WiFi network settings
+
+**Audio:**
+- `melody_vol` - Set melody volume (0-5)
 
 #### Action Commands
-- `action_playmelody` - Play notification sounds
-- `action_restart` - Restart the camera
-- `action_snapshot` - Take a photo
+**Melody & Sounds:**
+- `melody1` through `melody5` - Play different melodies (5/10/15 second duration)
+- `melodystop` - Stop playing melody
+
+**System Control:**
+- `restart_system` - Restart camera system
+- `pair_stop` - Restart camera (pairing mode)
 
 ### Tips
 - **Response Format**: GET commands display formatted results in a popup
