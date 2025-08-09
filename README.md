@@ -3,39 +3,169 @@
 
 ![mini-icon](https://github.com/anthonycmain/kodakam/assets/950131/5742001b-dd01-4b7d-8a8a-b472bb2d8811)
 
-**Description**:  After Kodak shutdown its Smart Home division I created this project to provide an app solution for those wanting to continue using their cameras.
+**Description**: After Kodak shutdown its Smart Home division, this project provides a comprehensive app solution for those wanting to continue using their cameras with full control and monitoring capabilities.
 
-Other things to include:
+## Features
 
-  - **Technology stack**: This is a React Native project built ontop of Expo using Typescript
-  - **Status**:  Alpha - not fit for anyones use yet
+- **Camera Discovery**: Automatically scan and discover Kodak smart cameras on your local network
+- **Camera Information**: Query detailed camera status including battery level, WiFi strength, temperature, and system info
+- **Remote Control**: Execute camera commands including:
+  - **GET Commands**: Retrieve camera settings and status information
+  - **SET Commands**: Configure camera settings (motion detection, flip mode, recording quality, etc.)
+  - **Action Commands**: Trigger actions like playing melodies, restarting, or taking snapshots
+- **User-Friendly Interface**: Modal-based command selection with parameter validation
+- **Real-time Feedback**: Live status updates and formatted command responses
 
-**Screenshot**: 
+## Technology Stack
 
-<img width="200" alt="Screenshot 2024-01-05 at 23 31 22" src="https://github.com/anthonycmain/kodakam/assets/950131/8782fe26-b850-497f-9b9c-586459e86c97">
+- **Framework**: React Native with Expo
+- **Language**: TypeScript
+- **UI Components**: React Native Elements, custom modal interfaces
+- **Network**: HTTP-based camera communication, LAN port scanning
+- **State Management**: React hooks (useState, useCallback)
+- **Internationalization**: react-i18next for multi-language support
+
+## Status
+
+**Beta** - Core functionality implemented and tested. Camera discovery, querying, and command execution are fully functional.
 
 
 
 ## Dependencies
 
-This project uses [react-native-lan-port-scanner](https://github.com/gajjartejas/react-native-lan-port-scanner)
+### Core Dependencies
+- [react-native-lan-port-scanner](https://github.com/gajjartejas/react-native-lan-port-scanner) - Network scanning for camera discovery
+- [expo-router](https://expo.github.io/router/) - File-based navigation
+- [react-i18next](https://react.i18next.com/) - Internationalization
+- [react-native-tcp](https://github.com/Rapsssito/react-native-tcp-socket) - Network communication
 
+### Development Dependencies
+- TypeScript for type safety
+- ESLint for code quality
+- Expo development tools
 
 ## Installation
 
-* Clone the project
-* Update dependencies with Yarn
-* Run the project from Xcode or Android Studio (not Expo Go) - needed to Lan Scanner
+### Prerequisites
+- Node.js (v16 or later)
+- Yarn or npm
+- Expo CLI
+- iOS Simulator (macOS) or Android Studio for testing
+
+### Setup Steps
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/anthonycmain/kodakam.git
+   cd kodakam
+   ```
+
+2. **Install dependencies**
+   ```bash
+   yarn install
+   # or
+   npm install
+   ```
+
+3. **Start the development server**
+   ```bash
+   npx expo start
+   ```
+
+4. **Run on device/simulator**
+   - **iOS**: Press `i` to open iOS Simulator
+   - **Android**: Press `a` to open Android emulator
+   - **Physical Device**: Scan QR code with Expo Go app
+
+### Important Notes
+- **Network Requirements**: The app requires access to your local network to discover cameras
+- **Development vs Production**: For full LAN scanning functionality, build and install the app directly (not through Expo Go)
+- **Camera Compatibility**: Tested with Kodak smart cameras (models W101, W121, etc.)
 
 
-## Known issues
+## Usage
 
-Mainly all still to do
+### Basic Workflow
+1. **Launch the app** and ensure you're connected to the same WiFi network as your Kodak cameras
+2. **Scan for cameras** using the built-in network scanner
+3. **Select a camera** from the discovered devices list
+4. **Query camera info** to see current status (battery, WiFi, temperature, etc.)
+5. **Send commands** using the modal interface to control camera settings
+
+### Available Commands
+
+#### GET Commands (Information Retrieval)
+- `get_caminfo` - Complete camera status and settings
+- `get_temperature` - Current temperature reading
+- `get_battery` - Battery level and charging status
+- `get_wifi` - WiFi signal strength and connection info
+
+#### SET Commands (Configuration)
+- `set_flipup` - Toggle camera orientation (Normal/Ceiling Mount)
+- `set_motiondet` - Configure motion detection sensitivity (1, 3, 5)
+- `set_recordquality` - Set video recording quality
+- `set_nightvision` - Enable/disable night vision mode
+
+#### Action Commands
+- `action_playmelody` - Play notification sounds
+- `action_restart` - Restart the camera
+- `action_snapshot` - Take a photo
+
+### Tips
+- **Response Format**: GET commands display formatted results in a popup
+- **Parameter Validation**: The app validates required parameters before sending commands
+- **Network Timeout**: Commands have a 10-second timeout for unresponsive cameras
+- **Error Handling**: Clear error messages for network and camera issues
+
+## Known Issues
+
+- **Camera Discovery**: Some cameras may not appear immediately - try refreshing the scan
+- **Network Timing**: Initial connection may take 10-15 seconds depending on network speed
+- **Command Responses**: Some older camera firmware may return different response formats
+- **Background Scanning**: LAN scanning requires the app to be built and installed (not available in Expo Go)
 
 
-## Getting involved
+## Project Structure
 
-General instructions on _how_ to contribute should be stated with a link to [CONTRIBUTING](CONTRIBUTING.md).
+```
+kodakam/
+├── app/                    # Expo Router pages
+│   ├── (tabs)/            # Tab-based navigation
+│   │   ├── camera.tsx     # Camera details and control
+│   │   └── index.tsx      # Home/scanner screen
+│   └── translations/      # i18n language files
+├── components/            # Reusable React components
+│   ├── CameraCommandInterface.tsx  # Command execution UI
+│   └── Themed.tsx        # Theme-aware components
+├── types/                # TypeScript type definitions
+│   └── CameraInfo.ts     # Camera command definitions
+├── constants/            # App constants and configuration
+└── assets/              # Images, fonts, and static files
+```
+
+### Key Files
+- **`types/CameraInfo.ts`** - Comprehensive camera command definitions and parameters
+- **`components/CameraCommandInterface.tsx`** - Modal-based command interface with parameter validation
+- **`app/(tabs)/camera.tsx`** - Main camera control screen with formatted status display
+- **`package.json`** - Dependencies including network scanning and communication libraries
+
+## Contributing
+
+We welcome contributions! Please see [CONTRIBUTING](CONTRIBUTING.md) for guidelines.
+
+### Development Workflow
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes and test thoroughly
+4. Commit your changes (`git commit -m 'Add amazing feature'`)
+5. Push to the branch (`git push origin feature/amazing-feature`)
+6. Open a Pull Request
+
+### Areas for Contribution
+- **Camera Compatibility**: Testing with different Kodak camera models
+- **UI/UX Improvements**: Enhanced interface design and user experience
+- **Command Coverage**: Adding support for additional camera commands
+- **Documentation**: Improving guides and API documentation
+- **Testing**: Unit tests and integration tests
 
 ----
 
