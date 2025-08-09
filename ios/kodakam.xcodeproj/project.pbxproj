@@ -333,6 +333,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = kodakam/kodakam.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = RA4PB2C3M4;
 				ENABLE_BITCODE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -351,8 +352,8 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
-				PRODUCT_BUNDLE_IDENTIFIER = com.anthonymain.kodakam;
-				PRODUCT_NAME = kodakam;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.anthonymain.kodakam";
+				PRODUCT_NAME = "kodakam";
 				SWIFT_OBJC_BRIDGING_HEADER = "kodakam/kodakam-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -369,6 +370,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = kodakam/kodakam.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = RA4PB2C3M4;
 				INFOPLIST_FILE = kodakam/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -382,8 +384,8 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
-				PRODUCT_BUNDLE_IDENTIFIER = com.anthonymain.kodakam;
-				PRODUCT_NAME = kodakam;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.anthonymain.kodakam";
+				PRODUCT_NAME = "kodakam";
 				SWIFT_OBJC_BRIDGING_HEADER = "kodakam/kodakam-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

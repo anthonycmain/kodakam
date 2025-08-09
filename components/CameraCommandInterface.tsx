@@ -31,7 +31,6 @@ export default function CameraCommandInterface({ cameraAddress }: CameraCommandI
   const [parameterValues, setParameterValues] = useState<ParameterValues>({});
   const [isLoading, setIsLoading] = useState(false);
   const [response, setResponse] = useState<string>('');
-  const [showModal, setShowModal] = useState(false);
   
   // Modal picker state
   const [showPickerModal, setShowPickerModal] = useState(false);
@@ -214,7 +213,6 @@ export default function CameraCommandInterface({ cameraAddress }: CameraCommandI
 
     setIsLoading(true);
     setResponse('');
-    setShowModal(true); // Show modal immediately when command starts
 
     try {
       const url = buildCommandUrl(command);
@@ -436,34 +434,22 @@ export default function CameraCommandInterface({ cameraAddress }: CameraCommandI
         </TouchableOpacity>
       ) : null}
 
-      {/* Response Modal */}
-      <Modal
-        visible={showModal}
-        animationType="slide"
-        presentationStyle="pageSheet"
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Command Response</Text>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setShowModal(false)}
-            >
-              <Text style={styles.closeButtonText}>Close</Text>
-            </TouchableOpacity>
-          </View>
-          <ScrollView style={styles.responseContainer}>
-            {response ? (
+      {/* Inline Response Display */}
+      {(response || isLoading) && (
+        <View style={styles.inlineResponseContainer}>
+          <Text style={styles.responseSubtitle}>Command Response</Text>
+          {isLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#ED0000" />
+              <Text style={styles.loadingText}>Processing command...</Text>
+            </View>
+          ) : (
+            <ScrollView style={styles.inlineResponseScrollView}>
               <Text style={styles.responseText}>{response}</Text>
-            ) : (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#007AFF" />
-                <Text style={styles.loadingText}>Processing command...</Text>
-              </View>
-            )}
-          </ScrollView>
+            </ScrollView>
+          )}
         </View>
-      </Modal>
+      )}
 
       {/* Modal Picker */}
       <Modal
@@ -762,5 +748,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#fff',
+  },
+  inlineResponseContainer: {
+    marginTop: 16,
+    backgroundColor: 'transparent',
+    minHeight: 100,
+    maxHeight: 300,
+  },
+  inlineResponseScrollView: {
+    flex: 1,
+    paddingTop: 12,
+    paddingBottom: 12,
+  },
+  responseSubtitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#444',
+    marginBottom: 8,
   },
 });

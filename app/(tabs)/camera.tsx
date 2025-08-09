@@ -1,4 +1,5 @@
 import { SectionList, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 import { Text, View } from '@/components/Themed';
 
@@ -38,8 +39,21 @@ export default function CameraDetailsScreen() {
       return;
     }
 
+    console.log('Camera screen params - local:', local);
+    console.log('Camera screen params - glob:', glob);
+
+    // Try to get camera ID from either local or global params
+    const cameraId = local.id || glob.id;
+    console.log('Camera ID found:', cameraId);
+
+    // Check if we have a valid camera ID
+    if (!cameraId) {
+      console.error('No camera ID provided in either local or global params');
+      return;
+    }
+
     // Get the camera info
-    const cameraAddress = 'http://' + local.id + '/';
+    const cameraAddress = 'http://' + cameraId + '/';
     console.log('Connecting to: ' + cameraAddress);
 
     // Set loading state and clear previous data immediately
@@ -325,47 +339,67 @@ export default function CameraDetailsScreen() {
 
 
 
+  const cameraId = local.id || glob.id;
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{ local.id } </Text>
-      
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity 
-          style={[styles.button, isQuerying && styles.buttonDisabled]} 
-          onPress={getCameraInfo}
-          disabled={isQuerying}
-        >
-          {isQuerying ? (
-            <ActivityIndicator size="small" color="white" />
-          ) : (
-            <Text style={styles.buttonText}>Query Camera</Text>
-          )}
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={[styles.button, styles.commandButton]} 
-          onPress={() => router.push({ pathname: '/commands', params: { id: local.id } })}
-        >
-          <Text style={styles.buttonText}>Send Commands</Text>
-        </TouchableOpacity>
-      </View>
+      {cameraId ? (
+        <>
+          <Text style={styles.title}>{cameraId}</Text>
+          
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity 
+              style={[styles.button, isQuerying && styles.buttonDisabled]} 
+              onPress={getCameraInfo}
+              disabled={isQuerying}
+            >
+              {isQuerying ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <Text style={styles.buttonText}>Query Camera</Text>
+              )}
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[styles.button, styles.commandButton]} 
+              onPress={() => router.push({ pathname: '/commands', params: { id: cameraId } })}
+            >
+              <Text style={styles.buttonText}>Send Commands</Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      ) : (
+        <View style={styles.noCameraContainer}>
+          <FontAwesome 
+            name="video-camera" 
+            size={80} 
+            color="#000" 
+            style={styles.noCameraIcon}
+          />
+          <Text style={styles.noCameraTitle}>No Camera Selected</Text>
+          <Text style={styles.noCameraMessage}>
+            Please go to the Scanner screen and select a camera to view its details and send commands.
+          </Text>
+        </View>
+      )}
 
-
-      {isQuerying && allInfo.length === 0 && (
+      {cameraId && isQuerying && allInfo.length === 0 && (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#007AFF" />
           <Text style={styles.loadingText}>Querying camera...</Text>
         </View>
       )}
 
-      <SectionList
-        sections={allInfo}
-        keyExtractor={(item) => item.key.toString()}
-        renderSectionHeader={renderSectionHeader}
-        renderItem={renderItem}
-        style={styles.fullWidthList}
-        contentContainerStyle={styles.listContainer}
-      />
+      {cameraId && (
+        <SectionList
+          sections={allInfo}
+          keyExtractor={(item) => item.key.toString()}
+          renderSectionHeader={renderSectionHeader}
+          renderItem={renderItem}
+          style={styles.fullWidthList}
+          contentContainerStyle={styles.listContainer}
+        />
+      )}
 
 
 
@@ -472,5 +506,29 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
-  }
+  },
+  noCameraContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  noCameraTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#444',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  noCameraMessage: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 24,
+    maxWidth: 300,
+  },
+  noCameraIcon: {
+    marginBottom: 24,
+    opacity: 0.6,
+  },
 });

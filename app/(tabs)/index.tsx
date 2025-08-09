@@ -135,10 +135,12 @@ export default function TabOneScreen() {
   return (
     <View style={styles.container}>
       
-      <Text> Scan Progress:  { (scanProgress == 100 ? 'Complete': scanProgress + '%') } </Text>
+    
       <TouchableOpacity style={styles.scanButton} onPress={performScan}>
         <Text style={styles.scanButtonText}>Scan</Text>
       </TouchableOpacity>
+
+      <Text> Scan Progress:  { (scanProgress == 100 ? 'Complete': scanProgress + '%') } </Text>
 
       <FlatList
         data={devices}
