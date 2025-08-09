@@ -142,16 +142,207 @@ export default function CameraDetailsScreen() {
     value: string;
   }
 
+  // Human-readable parameter mapping
+  const getReadableParameterName = (key: string): string => {
+    const parameterMap: { [key: string]: string } = {
+      // Basic Info
+      'localip': 'Local IP Address',
+      'wifi': 'WiFi Signal Strength',
+      'bat': 'Battery Level',
+      'charge': 'Charging Status',
+      'charge_dur': 'Charge Duration',
+      'storage': 'Storage Type',
+      
+      // Video Settings
+      'res': 'Video Resolution',
+      'brate': 'Bitrate',
+      'frate': 'Frame Rate',
+      'gop': 'GOP (Group of Pictures)',
+      'flicker': 'Flicker Frequency',
+      'flipup': 'Camera Orientation',
+      'isp_idx': 'Picture Mode',
+      
+      // Audio Settings
+      'svol': 'Speaker Volume',
+      'mvol': 'Microphone Volume',
+      'lulvol': 'Lullaby Volume',
+      
+      // Detection Settings
+      'ir': 'Night Vision',
+      'md': 'Motion Detection',
+      'sd': 'Sound Detection',
+      'td': 'Temperature Detection',
+      'lbd': 'Light Detection',
+      
+      // Environmental Data
+      'tem': 'Temperature (°C)',
+      'tem_float': 'Temperature (Precise)',
+      'hum': 'Humidity (%)',
+      'hum_float': 'Humidity (Precise)',
+      
+      // SD Card Info
+      'sdcap': 'SD Card Capacity',
+      'sdfree': 'SD Card Free Space',
+      'sdatrm': 'Auto Remove Old Files',
+      'sdnoclips': 'Number of Clips to Keep',
+      
+      // Network Settings
+      'ssid1': 'Primary WiFi Network',
+      'ssid2': 'Secondary WiFi Network',
+      'ssid3': 'Active WiFi Network',
+      'dnsm': 'Primary DNS',
+      'dnss': 'Secondary DNS',
+      
+      // System Info
+      'hw_id': 'Hardware ID',
+      'soc_ver': 'System Version',
+      'ca': 'Camera Active',
+      'mvr': 'Motion Video Recording',
+      
+      // Advanced Settings
+      'agc_lvl': 'Audio Gain Level',
+      'mdled': 'Motion Detection LED',
+      'lulla': 'Lullaby Mode',
+      'lulla_dur': 'Lullaby Duration',
+      'advise_homemode': 'Home Mode Advisory',
+      'snapshot_storage': 'Snapshot Storage Location',
+      
+      // Connectivity
+      'rp_pair': 'Repeater Pairing',
+      'rp_conn': 'Repeater Connection',
+      'wifi_env': 'WiFi Environment',
+      'sync_channel': 'Sync Channel',
+      
+      // LED Settings
+      'blue_led_en': 'Blue LED Enabled',
+      'blue_led_ontime': 'Blue LED On Time',
+      'red_led_affect': 'Red LED Affected',
+      
+      // System Status
+      'puscan': 'Push Scan',
+      'pu_ana_en': 'Push Analysis Enabled',
+      'rtscan': 'Real-time Scan',
+      'panel_vox': 'Panel Voice',
+      'block_pu_upgrade': 'Block Push Upgrade',
+      'pu_fw_pkg': 'Push Firmware Package'
+    };
+    
+    return parameterMap[key] || key;
+  };
+
+  const formatParameterValue = (key: string, value: string): string => {
+    // Convert numeric values to more readable formats
+    switch (key) {
+      case 'wifi':
+        return `${value}% (${parseInt(value) > 70 ? 'Excellent' : parseInt(value) > 50 ? 'Good' : parseInt(value) > 30 ? 'Fair' : 'Poor'})`;
+      
+      case 'bat':
+        const batteryLevel = parseInt(value);
+        if (batteryLevel > 75) return `${value}% (Full)`;
+        if (batteryLevel > 50) return `${value}% (Good)`;
+        if (batteryLevel > 25) return `${value}% (Low)`;
+        return `${value}% (Critical)`;
+      
+      case 'charge':
+        return value === '1' ? 'Charging' : 'Not Charging';
+      
+      case 'storage':
+        return value === '1' ? 'Cloud Storage' : 'SD Card';
+      
+      case 'res':
+        return value === '720' ? '720p (HD)' : value === '480' ? '480p (Standard)' : `${value}p`;
+      
+      case 'flipup':
+        return value === '1' ? 'Ceiling Mount (Flipped)' : 'Normal Orientation';
+      
+      case 'flicker':
+        return `${value} Hz`;
+      
+      case 'ir':
+        switch (value) {
+          case '0': return 'Auto';
+          case '1': return 'Always On';
+          case '2': return 'Always Off';
+          default: return value;
+        }
+      
+      case 'mdled':
+        return value === '1' ? 'Motion LED On' : 'Motion LED Off';
+      
+      case 'ca':
+        return value === '1' ? 'Active' : 'Inactive';
+      
+      case 'tem':
+        const temp = parseInt(value);
+        if (temp === -273) return 'No sensor data';
+        return `${value}°C`;
+      
+      case 'hum':
+        if (value === '-1') return 'No sensor data';
+        return `${value}%`;
+      
+      case 'sdcap':
+        if (parseInt(value) < 0) return 'No SD card';
+        return `${Math.abs(parseInt(value))} MB`;
+      
+      case 'sdfree':
+        return `${value} MB free`;
+      
+      case 'brate':
+        return `${value} kbps`;
+      
+      case 'rp_conn':
+        return value === 'disconnect' ? 'Disconnected' : value;
+      
+      case 'blue_led_en':
+        return value === '1' ? 'Enabled' : 'Disabled';
+      
+      case 'blue_led_ontime':
+        return `${value} seconds`;
+      
+      case 'lulla_dur':
+        return `${value} minutes`;
+      
+      case 'charge_dur':
+        return `${value} minutes`;
+      
+      // Boolean values
+      case 'sdatrm':
+      case 'puscan':
+      case 'pu_ana_en':
+      case 'rtscan':
+      case 'mvr':
+      case 'advise_homemode':
+      case 'red_led_affect':
+      case 'block_pu_upgrade':
+        return value === '1' ? 'Yes' : 'No';
+      
+      default:
+        // For complex values like detection settings (format: "0:0:3:0")
+        if (value.includes(':')) {
+          const parts = value.split(':');
+          if (parts.length === 4) {
+            const [enabled, schedule, sensitivity, unknown] = parts;
+            return `${enabled === '1' ? 'Enabled' : 'Disabled'} (Sensitivity: ${sensitivity})`;
+          }
+        }
+        return value;
+    }
+  };
+
   const renderSectionHeader = ({
     section: { title },
   }: {
     section: MySection;
-  }) => <View style={styles.section}>
-        <MonoText>{title}</MonoText>
+  }) => <View style={styles.sectionHeader}>
+        <Text style={styles.sectionHeaderText}>{title.replace('get_', '').replace(/_/g, ' ').toUpperCase()}</Text>
       </View>;
 
   const renderItem = ({ item }: { item: QueryParam }) => (
-    <Text>{`${item.key}, ${item.value}`}</Text>
+    <View style={styles.parameterRow}>
+      <Text style={styles.parameterLabel}>{getReadableParameterName(item.key)}</Text>
+      <Text style={styles.parameterValue}>{formatParameterValue(item.key, item.value)}</Text>
+    </View>
   );
   
 
@@ -233,6 +424,8 @@ export default function CameraDetailsScreen() {
         keyExtractor={(item) => item.key.toString()}
         renderSectionHeader={renderSectionHeader}
         renderItem={renderItem}
+        style={styles.fullWidthList}
+        contentContainerStyle={styles.listContainer}
       />
 
     </View>
@@ -292,13 +485,64 @@ const styles = StyleSheet.create({
     height: 1,
     width: '80%',
   },
-  section: {
-    backgroundColor: 'pink',
-    fontWeight: 'bold'
-
+  sectionHeader: {
+    backgroundColor: '#f8f9fa',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginTop: 16,
+    marginHorizontal: 12,
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: '#007AFF',
+  },
+  sectionHeaderText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#007AFF',
+    letterSpacing: 0.5,
   },
   paramList: {
     flex: 1,
     backgroundColor: 'blue'
+  },
+  parameterRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: 'white',
+    marginHorizontal: 12,
+    marginVertical: 2,
+    borderRadius: 6,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  parameterLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+    flex: 1,
+    marginRight: 8,
+  },
+  parameterValue: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'right',
+    flex: 1,
+    fontWeight: '500',
+  },
+  fullWidthList: {
+    flex: 1,
+    width: '100%',
+  },
+  listContainer: {
+    paddingBottom: 20,
+    width: '100%',
   }
 });

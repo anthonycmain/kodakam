@@ -9,8 +9,8 @@ import {
   TextInput,
   Modal,
   ActivityIndicator,
+  FlatList,
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
 import { 
   cameraCommands, 
   CameraCommand, 
@@ -31,6 +31,11 @@ export default function CameraCommandInterface({ cameraAddress }: CameraCommandI
   const [isLoading, setIsLoading] = useState(false);
   const [response, setResponse] = useState<string>('');
   const [showModal, setShowModal] = useState(false);
+  
+  // Modal picker state
+  const [showPickerModal, setShowPickerModal] = useState(false);
+  const [currentPickerParam, setCurrentPickerParam] = useState<CommandParameter | null>(null);
+  const [pickerOptions, setPickerOptions] = useState<Array<{label: string, value: any}>>([]);
 
   // Debug logging
   console.log('CameraCommandInterface rendered with address:', cameraAddress);
@@ -65,6 +70,30 @@ export default function CameraCommandInterface({ cameraAddress }: CameraCommandI
       ...prev,
       [paramName]: value
     }));
+  };
+
+  const openPickerModal = (param: CommandParameter) => {
+    setCurrentPickerParam(param);
+    
+    // Format options for the modal
+    const formattedOptions = param.options?.map(option => {
+      if (typeof option === 'object' && 'label' in option) {
+        return { label: option.label, value: option.value };
+      } else {
+        return { label: option.toString(), value: option };
+      }
+    }) || [];
+    
+    setPickerOptions(formattedOptions);
+    setShowPickerModal(true);
+  };
+
+  const selectPickerValue = (value: any) => {
+    if (currentPickerParam) {
+      handleParameterChange(currentPickerParam.name, value);
+    }
+    setShowPickerModal(false);
+    setCurrentPickerParam(null);
   };
 
   const buildCommandUrl = (command: CameraCommand): string => {
@@ -222,40 +251,36 @@ export default function CameraCommandInterface({ cameraAddress }: CameraCommandI
 
     switch (param.type) {
       case 'select':
+        const selectedOption = param.options?.find(option => {
+          if (typeof option === 'object' && 'label' in option) {
+            return option.value === value;
+          } else {
+            return option === value;
+          }
+        });
+        
+        const displayText = selectedOption ? 
+          (typeof selectedOption === 'object' && 'label' in selectedOption ? selectedOption.label : selectedOption.toString()) :
+          'Select an option...';
+        
         return (
           <View key={param.name} style={styles.parameterContainer}>
             <Text style={styles.parameterLabel}>
               {param.name} {param.required && '*'}
             </Text>
             <Text style={styles.parameterDescription}>{param.description}</Text>
-            <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={value || ''}
-                onValueChange={(itemValue) => handleParameterChange(param.name, itemValue)}
-                style={styles.picker}
-              >
-                <Picker.Item label="Select an option..." value="" />
-                {param.options?.map((option, index) => {
-                  if (typeof option === 'object' && 'label' in option) {
-                    return (
-                      <Picker.Item
-                        key={index}
-                        label={option.label}
-                        value={option.value}
-                      />
-                    );
-                  } else {
-                    return (
-                      <Picker.Item
-                        key={index}
-                        label={option.toString()}
-                        value={option}
-                      />
-                    );
-                  }
-                })}
-              </Picker>
-            </View>
+            <TouchableOpacity
+              style={styles.modalPickerButton}
+              onPress={() => openPickerModal(param)}
+            >
+              <Text style={[
+                styles.modalPickerText,
+                !value && styles.modalPickerPlaceholder
+              ]}>
+                {displayText}
+              </Text>
+              <Text style={styles.modalPickerArrow}>▼</Text>
+            </TouchableOpacity>
           </View>
         );
 
@@ -297,23 +322,35 @@ export default function CameraCommandInterface({ cameraAddress }: CameraCommandI
         );
 
       case 'boolean':
+        const booleanParam = {
+          ...param,
+          options: [
+            { label: "True", value: "true" },
+            { label: "False", value: "false" }
+          ]
+        };
+        
+        const boolSelectedOption = booleanParam.options.find(option => option.value === value);
+        const boolDisplayText = boolSelectedOption ? boolSelectedOption.label : 'Select...';
+        
         return (
           <View key={param.name} style={styles.parameterContainer}>
             <Text style={styles.parameterLabel}>
               {param.name} {param.required && '*'}
             </Text>
             <Text style={styles.parameterDescription}>{param.description}</Text>
-            <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={value || ''}
-                onValueChange={(itemValue) => handleParameterChange(param.name, itemValue)}
-                style={styles.picker}
-              >
-                <Picker.Item label="Select..." value="" />
-                <Picker.Item label="True" value="true" />
-                <Picker.Item label="False" value="false" />
-              </Picker>
-            </View>
+            <TouchableOpacity
+              style={styles.modalPickerButton}
+              onPress={() => openPickerModal(booleanParam)}
+            >
+              <Text style={[
+                styles.modalPickerText,
+                !value && styles.modalPickerPlaceholder
+              ]}>
+                {boolDisplayText}
+              </Text>
+              <Text style={styles.modalPickerArrow}>▼</Text>
+            </TouchableOpacity>
           </View>
         );
 
@@ -421,12 +458,7 @@ export default function CameraCommandInterface({ cameraAddress }: CameraCommandI
         </View>
       )}
 
-      {/* Debug: Show current state */}
-      <View style={[styles.infoContainer, { backgroundColor: '#FFF3E0' }]}>
-        <Text style={[styles.infoText, { color: '#E65100' }]}>
-          Debug: selectedCommand = "{selectedCommand}" | isLoading = {isLoading.toString()}
-        </Text>
-      </View>
+
 
       {/* Execute Button */}
       {selectedCommand ? (
@@ -441,13 +473,7 @@ export default function CameraCommandInterface({ cameraAddress }: CameraCommandI
             <Text style={styles.executeButtonText}>Execute Command</Text>
           )}
         </TouchableOpacity>
-      ) : (
-        <View style={[styles.infoContainer, { backgroundColor: '#FFEBEE' }]}>
-          <Text style={[styles.infoText, { color: '#C62828' }]}>
-            No command selected - Execute button hidden
-          </Text>
-        </View>
-      )}
+      ) : null}
 
       {/* Response Modal */}
       <Modal
@@ -475,6 +501,43 @@ export default function CameraCommandInterface({ cameraAddress }: CameraCommandI
               </View>
             )}
           </ScrollView>
+        </View>
+      </Modal>
+
+      {/* Modal Picker */}
+      <Modal
+        visible={showPickerModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        transparent={false}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>
+              Select {currentPickerParam?.name}
+            </Text>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setShowPickerModal(false)}
+            >
+              <Text style={styles.closeButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+          <FlatList
+            data={pickerOptions}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.pickerOption}
+                onPress={() => selectPickerValue(item.value)}
+              >
+                <Text style={styles.pickerOptionText}>{item.label}</Text>
+                {parameterValues[currentPickerParam?.name || ''] === item.value && (
+                  <Text style={styles.pickerCheckmark}>✓</Text>
+                )}
+              </TouchableOpacity>
+            )}
+          />
         </View>
       </Modal>
     </ScrollView>
@@ -575,15 +638,7 @@ const styles = StyleSheet.create({
     color: '#666',
     marginBottom: 8,
   },
-  pickerContainer: {
-    backgroundColor: 'white',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  picker: {
-    height: 50,
-  },
+
   textInput: {
     backgroundColor: 'white',
     borderRadius: 8,
@@ -655,5 +710,47 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 16,
     color: '#666',
+  },
+  modalPickerButton: {
+    backgroundColor: 'white',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    padding: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  modalPickerText: {
+    fontSize: 16,
+    color: '#333',
+    flex: 1,
+  },
+  modalPickerPlaceholder: {
+    color: '#999',
+  },
+  modalPickerArrow: {
+    fontSize: 12,
+    color: '#666',
+    marginLeft: 8,
+  },
+  pickerOption: {
+    backgroundColor: 'white',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  pickerOptionText: {
+    fontSize: 16,
+    color: '#333',
+    flex: 1,
+  },
+  pickerCheckmark: {
+    fontSize: 18,
+    color: '#007AFF',
+    fontWeight: 'bold',
   },
 });
