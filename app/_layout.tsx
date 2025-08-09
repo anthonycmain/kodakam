@@ -50,8 +50,18 @@ function RootLayoutNav() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false, title: 'Kodakam' }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        <Stack.Screen 
+          name="commands" 
+          options={{ 
+            title: 'Camera Commands',
+            headerStyle: { backgroundColor: '#FFB700' },
+            headerTintColor: '#000',
+            headerBackTitle: ' ',
+            headerBackTitleVisible: false,
+          }} 
+        />
       </Stack>
     </ThemeProvider>
   );

@@ -1,7 +1,7 @@
 import { SectionList, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 
 import { Text, View } from '@/components/Themed';
-import CameraCommandInterface from '@/components/CameraCommandInterface';
+
 
 import { useCallback, useEffect, useState } from 'react';
 import CameraInfo, { getCommands, allCommands } from '@/types/CameraInfo';
@@ -20,7 +20,7 @@ export default function CameraDetailsScreen() {
   const [params, setParams] = useState<{[key: string]: string}>();
 
   const [allInfo, setAllInfo] = useState<MySection[]>([]);
-  const [showCommandInterface, setShowCommandInterface] = useState(false);
+
 
   const [isQuerying, setIsQuerying] = useState(false);
 
@@ -51,7 +51,7 @@ export default function CameraDetailsScreen() {
 
     // Look through the get commands
     for (const key in allCommands) {
-      const command = allCommands[key];
+      const command = allCommands[key as keyof typeof allCommands];
 
       if (command.startsWith('get_')) {
         const url = cameraAddress + '?req=' + command;
@@ -323,21 +323,7 @@ export default function CameraDetailsScreen() {
 
 
 
-  if (showCommandInterface) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity 
-            style={styles.backChevron}
-            onPress={() => setShowCommandInterface(false)}
-          >
-            <Text style={styles.backChevronText}>‹</Text>
-          </TouchableOpacity>
-        </View>
-        <CameraCommandInterface cameraAddress={`http://${local.id}/`} />
-      </View>
-    );
-  }
+
 
   return (
     <View style={styles.container}>
@@ -358,7 +344,7 @@ export default function CameraDetailsScreen() {
         
         <TouchableOpacity 
           style={[styles.button, styles.commandButton]} 
-          onPress={() => setShowCommandInterface(true)}
+          onPress={() => router.push({ pathname: '/commands', params: { id: local.id } })}
         >
           <Text style={styles.buttonText}>Send Commands</Text>
         </TouchableOpacity>
@@ -397,20 +383,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
   },
-  header: {
-    width: '100%',
-    alignItems: 'flex-start',
-    paddingHorizontal: 16,
-  },
-  backChevron: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  backChevronText: {
-    color: '#000',
-    fontSize: 32,
-    fontWeight: 'normal',
-  },
+
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',

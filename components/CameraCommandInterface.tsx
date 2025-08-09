@@ -10,6 +10,7 @@ import {
   Modal,
   ActivityIndicator,
   FlatList,
+  SectionList,
 } from 'react-native';
 import { 
   cameraCommands, 
@@ -41,7 +42,8 @@ export default function CameraCommandInterface({ cameraAddress }: CameraCommandI
   const [showCommandModal, setShowCommandModal] = useState(false);
 
   const commandOptions = Object.keys(cameraCommands).map(key => ({
-    label: `${cameraCommands[key].description} (${key})`,
+    label: cameraCommands[key].description,
+    command: key,
     value: key,
     category: cameraCommands[key].category,
   }));
@@ -50,6 +52,22 @@ export default function CameraCommandInterface({ cameraAddress }: CameraCommandI
   const getCommands = commandOptions.filter(cmd => cmd.category === 'get');
   const setCommands = commandOptions.filter(cmd => cmd.category === 'set');
   const actionCommands = commandOptions.filter(cmd => cmd.category === 'action');
+
+  // Create sectioned data for SectionList
+  const commandSections = [
+    {
+      title: 'GET Commands - Retrieve information from the camera',
+      data: getCommands,
+    },
+    {
+      title: 'SET Commands - Change camera settings', 
+      data: setCommands,
+    },
+    {
+      title: 'ACTION Commands - Trigger immediate actions',
+      data: actionCommands,
+    },
+  ].filter(section => section.data.length > 0); // Only show sections with commands
 
   const handleCommandChange = (command: string) => {
     setSelectedCommand(command);
@@ -230,9 +248,9 @@ export default function CameraCommandInterface({ cameraAddress }: CameraCommandI
       }
     } catch (error) {
       console.error('Command execution error:', error);
-      let errorMessage = `Error: ${error.message}`;
+      let errorMessage = `Error: ${error instanceof Error ? error.message : 'Unknown error'}`;
       
-      if (error.name === 'TypeError' && error.message.includes('Network request failed')) {
+      if (error instanceof Error && error.name === 'TypeError' && error.message.includes('Network request failed')) {
         errorMessage = 'Network error: Unable to connect to camera. Please check the camera IP address and network connection.';
       }
       
@@ -359,8 +377,6 @@ export default function CameraCommandInterface({ cameraAddress }: CameraCommandI
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Camera Commands</Text>
-      <Text style={styles.address}>Camera: {cameraAddress}</Text>
       
       <View style={styles.infoContainer}>
         <Text style={styles.infoText}>
@@ -383,7 +399,7 @@ export default function CameraCommandInterface({ cameraAddress }: CameraCommandI
             !selectedCommand && styles.modalPickerPlaceholder
           ]}>
             {selectedCommand ? 
-              `${cameraCommands[selectedCommand]?.description} (${selectedCommand})` : 
+              cameraCommands[selectedCommand]?.description : 
               'Select a command...'
             }
           </Text>
@@ -503,9 +519,14 @@ export default function CameraCommandInterface({ cameraAddress }: CameraCommandI
               <Text style={styles.closeButtonText}>Cancel</Text>
             </TouchableOpacity>
           </View>
-          <FlatList
-            data={commandOptions}
+          <SectionList
+            sections={commandSections}
             keyExtractor={(item) => item.value}
+            renderSectionHeader={({ section: { title } }) => (
+              <View style={styles.sectionHeaderModal}>
+                <Text style={styles.sectionHeaderModalText}>{title}</Text>
+              </View>
+            )}
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={styles.pickerOption}
@@ -513,9 +534,7 @@ export default function CameraCommandInterface({ cameraAddress }: CameraCommandI
               >
                 <View style={styles.commandModalItem}>
                   <Text style={styles.commandModalTitle}>{item.label}</Text>
-                  <Text style={styles.commandModalCategory}>
-                    {item.category.toUpperCase()} Command
-                  </Text>
+                  <Text style={styles.commandModalCategory}>{item.command}</Text>
                 </View>
                 {selectedCommand === item.value && (
                   <Text style={styles.pickerCheckmark}>✓</Text>
@@ -532,8 +551,7 @@ export default function CameraCommandInterface({ cameraAddress }: CameraCommandI
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: '#f5f5f5',
+    padding: 16
   },
   title: {
     fontSize: 24,
@@ -547,16 +565,14 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   infoContainer: {
-    backgroundColor: '#E3F2FD',
-    borderRadius: 8,
+    backgroundColor: '#ED0000',
+    borderRadius: 0,
     padding: 12,
-    marginBottom: 20,
-    borderLeftWidth: 4,
-    borderLeftColor: '#2196F3',
+    marginBottom: 20
   },
   infoText: {
     fontSize: 14,
-    color: '#1976D2',
+    color: '#fff',
     lineHeight: 20,
   },
   sectionContainer: {
@@ -614,8 +630,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   executeButton: {
-    backgroundColor: '#007AFF',
-    borderRadius: 8,
+    backgroundColor: '#ED0000',
+    borderRadius: 0,
     padding: 16,
     alignItems: 'center',
     marginBottom: 20,
@@ -630,7 +646,7 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: '#FFB700',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -643,10 +659,11 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#000',
   },
   closeButton: {
-    backgroundColor: '#007AFF',
-    borderRadius: 6,
+    backgroundColor: '#ED0000',
+    borderRadius: 0,
     paddingHorizontal: 16,
     paddingVertical: 8,
   },
@@ -661,10 +678,10 @@ const styles = StyleSheet.create({
   responseText: {
     fontSize: 14,
     fontFamily: 'monospace',
-    color: '#333',
-    backgroundColor: '#f8f8f8',
+    color: '#000',
+    backgroundColor: 'transparent',
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 0,
   },
   loadingContainer: {
     flex: 1,
@@ -678,10 +695,9 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   modalPickerButton: {
-    backgroundColor: 'white',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ddd',
+    backgroundColor: '#ED0000',
+    borderRadius: 0,
+    borderWidth: 0,
     padding: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -689,34 +705,35 @@ const styles = StyleSheet.create({
   },
   modalPickerText: {
     fontSize: 16,
-    color: '#333',
+    color: '#fff',
     flex: 1,
   },
   modalPickerPlaceholder: {
-    color: '#999',
+    color: '#fff',
+    opacity: 0.7,
   },
   modalPickerArrow: {
     fontSize: 12,
-    color: '#666',
+    color: '#fff',
     marginLeft: 8,
   },
   pickerOption: {
-    backgroundColor: 'white',
+    backgroundColor: 'transparent',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: 'rgba(0,0,0,0.1)',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   pickerOptionText: {
     fontSize: 16,
-    color: '#333',
+    color: '#000',
     flex: 1,
   },
   pickerCheckmark: {
     fontSize: 18,
-    color: '#007AFF',
+    color: '#000',
     fontWeight: 'bold',
   },
   commandModalItem: {
@@ -725,7 +742,7 @@ const styles = StyleSheet.create({
   },
   commandModalTitle: {
     fontSize: 16,
-    color: '#333',
+    color: '#000',
     fontWeight: '500',
     marginBottom: 2,
   },
@@ -734,5 +751,16 @@ const styles = StyleSheet.create({
     color: '#666',
     textTransform: 'uppercase',
     fontWeight: '400',
+  },
+  sectionHeaderModal: {
+    backgroundColor: '#000',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginTop: 8,
+  },
+  sectionHeaderModalText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#fff',
   },
 });

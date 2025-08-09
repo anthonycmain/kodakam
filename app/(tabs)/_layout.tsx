@@ -69,8 +69,10 @@ export default function TabLayout() {
         options={{
           title: 'Camera Details',
           tabBarIcon: ({ color }) => <TabBarIcon name="video-camera" color={color} />,
+          headerBackTitle: 'Back',
         }}
       />
+
     </Tabs>
     </I18nextProvider>
   );
