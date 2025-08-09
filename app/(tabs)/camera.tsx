@@ -1,15 +1,12 @@
-import { Button, FlatList, SectionList, StyleSheet, TouchableOpacity, VirtualizedList, ActivityIndicator } from 'react-native';
+import { SectionList, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 
-import EditScreenInfo from '@/components/EditScreenInfo';
 import { Text, View } from '@/components/Themed';
 import CameraCommandInterface from '@/components/CameraCommandInterface';
 
-import LanPortScanner, { LSScanConfig, LSSingleScanResult } from 'react-native-lan-port-scanner';
 import { useCallback, useEffect, useState } from 'react';
 import CameraInfo, { getCommands, allCommands } from '@/types/CameraInfo';
 import { useGlobalSearchParams, useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { MonoText } from '@/components/StyledText';
 
 export default function CameraDetailsScreen() {
 
@@ -22,8 +19,6 @@ export default function CameraDetailsScreen() {
 
   const [params, setParams] = useState<{[key: string]: string}>();
 
-  //const [allInfo, setAllInfo] = useState<Array<{[key: string]: QueryParam[]}>>([]);
-  //const [allInfo, setAllInfo] = useState<Record<string, QueryParam[]>>({});
   const [allInfo, setAllInfo] = useState<MySection[]>([]);
   const [showCommandInterface, setShowCommandInterface] = useState(false);
 
@@ -102,37 +97,6 @@ export default function CameraDetailsScreen() {
       setIsQuerying(false);
     }
 
-    // fetch(cameraAddress + '?req=get_caminfo')
-    //   .then(caminfo => {
-
-    //     caminfo.text().then(function (body) {
-
-    //       const queryString = body.split('get_caminfo: ')[1];
-
-    //       const cameraParams = new URLSearchParams(queryString);
-
-    //       // Populate CameraInfo object
-    //       const cameraInfo: CameraInfo = {
-    //         ipAddress: local.id.toString(),
-    //         params: cameraParams
-    //       }
-
-          
-
-
-    //       let indexedArray: {[key: string]: number};
-
-    //       //indexedArray = params.values();
-
-
-    //       setCameraInfo(cameraInfo);
-
-    //     });
-
-        
-    //   });
-      
-      
 
   }, []);
 
@@ -364,10 +328,10 @@ export default function CameraDetailsScreen() {
       <View style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity 
-            style={styles.backButton}
+            style={styles.backChevron}
             onPress={() => setShowCommandInterface(false)}
           >
-            <Text style={styles.backButtonText}>← Back to Info</Text>
+            <Text style={styles.backChevronText}>‹</Text>
           </TouchableOpacity>
         </View>
         <CameraCommandInterface cameraAddress={`http://${local.id}/`} />
@@ -377,7 +341,6 @@ export default function CameraDetailsScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{t('camera.title')} Details</Text>
       <Text style={styles.title}>{ local.id } </Text>
       
       <View style={styles.buttonContainer}>
@@ -401,20 +364,6 @@ export default function CameraDetailsScreen() {
         </TouchableOpacity>
       </View>
 
-
-
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-
-      {/* <FlatList
-        data={paramsArray}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item }) => (
-          <View style={{ flex: 1, flexDirection: 'row'}}>
-            <Text style={{width: 150, marginRight: 50, padding: 10}}>{t('params.' + item.key)}</Text>
-            <Text style={{padding: 10}}>{item.value}</Text>
-          </View>
-        )}
-      /> */}
 
       {isQuerying && allInfo.length === 0 && (
         <View style={styles.loadingContainer}>
@@ -452,17 +401,15 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'flex-start',
     paddingHorizontal: 16,
-    paddingTop: 16,
   },
-  backButton: {
-    backgroundColor: '#007AFF',
-    borderRadius: 8,
+  backChevron: {
     paddingHorizontal: 16,
     paddingVertical: 8,
   },
-  backButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
+  backChevronText: {
+    color: '#000',
+    fontSize: 32,
+    fontWeight: 'normal',
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -471,8 +418,8 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   button: {
-    backgroundColor: '#007AFF',
-    borderRadius: 8,
+    backgroundColor: '#ED0000',
+    borderRadius: 0,
     paddingHorizontal: 20,
     paddingVertical: 12,
     minWidth: 120,
@@ -483,7 +430,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   commandButton: {
-    backgroundColor: '#34C759',
+    backgroundColor: '#ED0000',
   },
   buttonText: {
     color: 'white',
@@ -496,56 +443,42 @@ const styles = StyleSheet.create({
     width: '80%',
   },
   sectionHeader: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#000',
     paddingHorizontal: 16,
     paddingVertical: 12,
     marginTop: 16,
-    marginHorizontal: 12,
-    borderRadius: 8,
-    borderLeftWidth: 4,
-    borderLeftColor: '#007AFF',
+    marginHorizontal: 0,
   },
   sectionHeaderText: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#007AFF',
+    color: '#fff',
     letterSpacing: 0.5,
   },
   paramList: {
     flex: 1,
-    backgroundColor: 'blue'
   },
   parameterRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 8,
-    backgroundColor: 'white',
-    marginHorizontal: 12,
+    marginHorizontal: 0,
     marginVertical: 2,
-    borderRadius: 6,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
   },
   parameterLabel: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: '#000',
     flex: 1,
     marginRight: 8,
   },
   parameterValue: {
     fontSize: 14,
-    color: '#666',
+    color: '#000',
     textAlign: 'right',
     flex: 1,
-    fontWeight: '500',
+    fontWeight: 'normal',
   },
   fullWidthList: {
     flex: 1,

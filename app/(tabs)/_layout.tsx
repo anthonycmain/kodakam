@@ -30,18 +30,24 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarInactiveTintColor: '#000',
         // Disable the static render of the header on web
         // to prevent a hydration error in React Navigation v6.
         headerShown: useClientOnlyValue(false, true),
-        headerStyle: { backgroundColor: Colors[colorScheme ?? 'light'].background },
+        headerStyle: { backgroundColor: '#FFB700' },
         tabBarInactiveBackgroundColor: Colors[colorScheme ?? 'light'].background,
         tabBarActiveBackgroundColor: Colors[colorScheme ?? 'light'].background,
+        tabBarStyle: {
+          backgroundColor: Colors[colorScheme ?? 'light'].background,
+          borderTopWidth: 2,
+          borderTopColor: '#ED0000',
+        },
       }}>
       <Tabs.Screen
         name="index"
         options={{
           title: 'Network Scanner',
-          tabBarIcon: ({ color }) => <TabBarIcon name="search" color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="wifi" color={color} />,
           headerRight: () => (
             <Link href="/modal" asChild>
               <Pressable>
@@ -56,6 +62,13 @@ export default function TabLayout() {
               </Pressable>
             </Link>
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="camera"
+        options={{
+          title: 'Camera Details',
+          tabBarIcon: ({ color }) => <TabBarIcon name="video-camera" color={color} />,
         }}
       />
     </Tabs>

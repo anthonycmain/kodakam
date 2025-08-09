@@ -136,27 +136,28 @@ export default function TabOneScreen() {
     <View style={styles.container}>
       
       <Text> Scan Progress:  { (scanProgress == 100 ? 'Complete': scanProgress + '%') } </Text>
-      <Button onPress={ performScan } title='Scan'></Button>
+      <TouchableOpacity style={styles.scanButton} onPress={performScan}>
+        <Text style={styles.scanButtonText}>Scan</Text>
+      </TouchableOpacity>
 
       <FlatList
         data={devices}
         style={styles.deviceList}
-        //numColumns={2}
-        //style={styles.previewListStyle}
         renderItem={({item, index}) =>
-        <TouchableOpacity  onPress={() => router.push({ pathname:'/(tabs)/camera', params: { id: item.ipAddress} })}>
-          <View style={{ flex: 1, flexDirection: 'row'}}>
-            <Image source={require('../../assets/images/camera-icon-1.png')} style={{width: 50, height: 50}} />
-            <Text>IP: { item.ipAddress }</Text>
-            {
-              getChargingIcon(item.params.get('charge'))
-            }
+        <TouchableOpacity style={styles.deviceItem} onPress={() => router.push({ pathname:'/(tabs)/camera', params: { id: item.ipAddress} })}>
+          <View style={styles.deviceContent}>
+            <View style={styles.deviceHeader}>
+              <Image source={require('../../assets/images/camera-icon-1.png')} style={styles.cameraIcon} />
+              <View style={styles.deviceInfo}>
+                <Text style={styles.ipAddress}>IP: {item.ipAddress}</Text>
+                <Text style={styles.deviceName}>Kodak Camera</Text>
+              </View>
+              <View style={styles.batteryContainer}>
+                {getChargingIcon(item.params.get('charge'))}
+              </View>
+            </View>
           </View>
-          
-          <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-          
         </TouchableOpacity>
-          
         }
       />
       
@@ -180,7 +181,62 @@ const styles = StyleSheet.create({
     width: '80%',
   },
   deviceList: {
-    marginTop: 20
-  }
-  
+    flex: 1,
+    width: '100%',
+    marginTop: 20,
+    backgroundColor: 'transparent',
+  },
+  deviceItem: {
+    width: '100%',
+    marginBottom: 12,
+    backgroundColor: '#fff',
+    borderRadius: 0,
+    marginHorizontal: 0,
+  },
+  deviceContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+  },
+  deviceHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  cameraIcon: {
+    width: 50,
+    height: 50,
+    marginRight: 16,
+  },
+  deviceInfo: {
+    flex: 1,
+    marginRight: 16,
+  },
+  ipAddress: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 4,
+  },
+  deviceName: {
+    fontSize: 14,
+    color: '#000',
+  },
+  batteryContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scanButton: {
+    backgroundColor: '#ED0000',
+    borderRadius: 0,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    minWidth: 120,
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  scanButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
 });
